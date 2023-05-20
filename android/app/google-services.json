@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "186361429059",
+    "project_id": "orbital-appllergy",
+    "storage_bucket": "orbital-appllergy.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:186361429059:android:07cbf6ae174fef98b5e8f6",
+        "android_client_info": {
+          "package_name": "com.orbital.appllergy"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "186361429059-rag7kqr7g601jptdahg7jpft2qbrlop7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCUugaOrzX3iB8x1XNRS_HdwhoxbZZ-ZZs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "186361429059-rag7kqr7g601jptdahg7jpft2qbrlop7.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
