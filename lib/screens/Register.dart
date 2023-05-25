@@ -14,8 +14,6 @@ class _RegisterState extends State<Register> {
   final TextEditingController _password = TextEditingController();
   final TextEditingController _confirmPassword = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  //String error = "";
-  //FirebaseAuth fireBaseInstance = FirebaseAuth.instance;
   AuthService authService = AuthService();
 
   //Dispose the controller when its no longer needed to avoid memory leak.
