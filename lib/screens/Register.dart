@@ -1,54 +1,79 @@
-import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:orbital_appllergy/screens/SuccessfulRegistration.dart';
 
-import 'Register.dart';
-
-class SignIn extends StatefulWidget {
-  const SignIn({Key? key}) : super(key: key);
+class Register extends StatefulWidget {
+  const Register({Key? key}) : super(key: key);
 
   @override
-  State<SignIn> createState() => _SignInState();
+  State<Register> createState() => _RegisterState();
 }
 
-class _SignInState extends State<SignIn> {
+class _RegisterState extends State<Register> {
 
-  //text controllers
   final TextEditingController _email = TextEditingController();
   final TextEditingController _password = TextEditingController();
+  final TextEditingController _confirmPassword = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   String error = "";
   FirebaseAuth fireBaseInstance = FirebaseAuth.instance;
 
+  //Dispose the controller when its no longer needed to avoid memory leak.
   @override
   void dispose() {
-    //Dispose the controller when its no longer needed to avoid memory leak.
     _email.dispose();
     _password.dispose();
+    _confirmPassword.dispose();
     super.dispose();
-  }
-
-  Future signIn() async {
-    try {
-      await fireBaseInstance.signInWithEmailAndPassword(
-          email: _email.text.trim(),
-          password: _password.text.trim()
-      );
-    } on FirebaseAuthException catch (e) {
-      if (e.code == 'user-not-found') {
-        setState(() => error = 'Cannot find user');
-      } else {
-        setState(() => error = 'An error occurred. Please try again later.');
-      }
-    } catch (e) {
-      setState(() => error = 'An error occurred. Please try again later.');
-    }
   }
 
   @override
   Widget build(BuildContext context) {
 
+    /*
+    register method is inside the build function because i need access to the
+    context in order to switch screens.
+     */
+    Future register() async {
+      try {
+        await fireBaseInstance.createUserWithEmailAndPassword(
+            email: _email.text.trim(),
+            password: _password.text.trim()
+        );
+        //TODO: Bring user to home screen or a screen that welcomes them.
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => SuccessfulRegistration()),
+        );
+      } on FirebaseAuthException catch(e) {
+        if (e.code == "email-already-in-use") {
+          setState(() => error = 'This email is already in use');
+        } else {
+          print('hello1');
+          setState(() => error = 'An error occurred. Please try again later.');
+        }
+      } catch (e) {
+        print("hello2");
+        setState(() => error = 'An error occurred. Please try again later.');
+      }
+    }
+
+    //Register Screen UI
     return Scaffold(
       backgroundColor: Colors.red[100],
+      appBar: AppBar(
+        backgroundColor: Colors.red[200],
+        title: const Text(
+          'Sign In',
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 30,
+            fontFamily: 'Poppins',
+          ),
+        ),
+        centerTitle: true,
+        elevation: 0,
+      ),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -57,18 +82,18 @@ class _SignInState extends State<SignIn> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  //Logo
-                  Image.asset(
-                    'assets/apple.png',
-                    height: 200,
-                  ),
-                  const SizedBox(height:10),
-
                   //Name of the app
                   const Text(
-                    'Appllergy',
+                    'Register',
                     style: TextStyle(
                       fontSize: 40.0,
+                      fontFamily: 'Poppins',
+                    ),
+                  ),
+                  const Text(
+                    'To join the Appllergy community!',
+                    style: TextStyle(
+                      fontSize: 20.0,
                       fontFamily: 'Poppins',
                     ),
                   ),
@@ -96,7 +121,7 @@ class _SignInState extends State<SignIn> {
                             if (value == null || value.isEmpty) {
                               return 'Please enter an email';
                             } else if (!RegExp(r'^[\w-]+(\.[\w-]+)*@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*(\.[a-zA-Z]{2,})$',)
-                                .hasMatch(value)){
+                            .hasMatch(value)){
                               return 'Please enter a valid email';
                             }
                           },
@@ -128,6 +153,42 @@ class _SignInState extends State<SignIn> {
                           validator: (value) {
                             if (value == null || value.isEmpty) {
                               return 'Please enter a password';
+                            } else if (value.length < 6) {
+                              return 'Password length must be at least 6 characters';
+                            } else {
+                              return null;
+                            }
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height:20),
+
+                  //Confirm Password
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 0),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200],
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.white),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(10,0,0,0),
+                        child: TextFormField(
+                          controller: _confirmPassword,
+                          decoration: const InputDecoration(
+                            hintText: 'Confirm Password',
+                            border: InputBorder.none,
+                            prefixIcon: Icon(Icons.lock),
+                          ),
+                          obscureText: true,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please confirm your password';
+                            } else if (value != _password.text.trim()){
+                              return 'Password do not match!';
                             } else {
                               return null;
                             }
@@ -147,13 +208,13 @@ class _SignInState extends State<SignIn> {
                   ),
                   const SizedBox(height:10),
 
-                  //Sign In
+                  //Register
                   SizedBox(
                     width: 150,
                     child: ElevatedButton(
                       onPressed: () {
                         if (_formKey.currentState!.validate()) {
-                          signIn();
+                          register();
                         }
                       },
                       style: ButtonStyle(
@@ -168,49 +229,15 @@ class _SignInState extends State<SignIn> {
                         ),
                       ),
                       child: const Text(
-                          'Sign In',
+                        'Register',
                         style: TextStyle(
-                          fontSize: 20,
-                          fontFamily: 'Poppins'
+                            fontSize: 20,
+                            fontFamily: 'Poppins'
                         ),
                       ),
                     ),
                   ),
                   const SizedBox(height:10),
-
-                  //Register
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text(
-                        'Not a member?',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontFamily: 'Poppins',
-                        ),
-                      ),
-                      const SizedBox(width: 5),
-                      GestureDetector(
-                        onTap: () {
-                           Navigator.push(
-                             context,
-                             MaterialPageRoute(
-                                 builder: (context) => const Register()
-                             )
-                           );
-                        },
-                        child: const Text(
-                          'Register now!',
-                          style: TextStyle(
-                            fontSize: 15,
-                            color: Colors.blue,
-                            fontFamily: 'Poppins',
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                    ],
-                  ),
                 ],
               ),
             ),
