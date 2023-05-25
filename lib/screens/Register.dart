@@ -1,6 +1,5 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:orbital_appllergy/screens/SuccessfulRegistration.dart';
+import 'package:orbital_appllergy/service/AuthService.dart';
 
 class Register extends StatefulWidget {
   const Register({Key? key}) : super(key: key);
@@ -15,8 +14,9 @@ class _RegisterState extends State<Register> {
   final TextEditingController _password = TextEditingController();
   final TextEditingController _confirmPassword = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  String error = "";
-  FirebaseAuth fireBaseInstance = FirebaseAuth.instance;
+  //String error = "";
+  //FirebaseAuth fireBaseInstance = FirebaseAuth.instance;
+  AuthService authService = AuthService();
 
   //Dispose the controller when its no longer needed to avoid memory leak.
   @override
@@ -29,34 +29,6 @@ class _RegisterState extends State<Register> {
 
   @override
   Widget build(BuildContext context) {
-
-    /*
-    register method is inside the build function because i need access to the
-    context in order to switch screens.
-     */
-    Future register() async {
-      try {
-        await fireBaseInstance.createUserWithEmailAndPassword(
-            email: _email.text.trim(),
-            password: _password.text.trim()
-        );
-        //TODO: Bring user to home screen or a screen that welcomes them.
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => SuccessfulRegistration()),
-        );
-      } on FirebaseAuthException catch(e) {
-        if (e.code == "email-already-in-use") {
-          setState(() => error = 'This email is already in use');
-        } else {
-          print('hello1');
-          setState(() => error = 'An error occurred. Please try again later.');
-        }
-      } catch (e) {
-        print("hello2");
-        setState(() => error = 'An error occurred. Please try again later.');
-      }
-    }
 
     //Register Screen UI
     return Scaffold(
@@ -200,7 +172,7 @@ class _RegisterState extends State<Register> {
                   const SizedBox(height:20),
 
                   Text(
-                    error,
+                    authService.error,
                     style: const TextStyle(
                       color: Colors.red,
                       fontSize: 14,
@@ -212,10 +184,15 @@ class _RegisterState extends State<Register> {
                   SizedBox(
                     width: 150,
                     child: ElevatedButton(
-                      onPressed: () {
+                      onPressed: () async {
                         if (_formKey.currentState!.validate()) {
-                          register();
+                          await authService.register(_email.text.trim(),
+                              _password.text.trim(), context);
+                        } else {
+                          authService.error = "";
                         }
+                        setState(() {
+                        });
                       },
                       style: ButtonStyle(
                         backgroundColor: MaterialStateProperty.all<Color>(Colors.red),
