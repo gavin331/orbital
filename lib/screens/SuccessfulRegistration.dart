@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import 'HomePage.dart';
 
 class SuccessfulRegistration extends StatelessWidget {

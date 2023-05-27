@@ -10,7 +10,7 @@ class AuthService {
 
   String error = "";
   final FirebaseAuth _fireBaseInstance = FirebaseAuth.instance;
-  final user = FirebaseAuth.instance.currentUser!;
+  final user = FirebaseAuth.instance.currentUser;
 
   //Sign in with email and password
   Future signIn(String email, String password, BuildContext context) async {
