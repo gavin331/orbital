@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-
+import 'package:orbital_appllergy/service/AuthService.dart';
 import 'Register.dart';
 
 class SignIn extends StatefulWidget {
@@ -16,8 +15,7 @@ class _SignInState extends State<SignIn> {
   final TextEditingController _email = TextEditingController();
   final TextEditingController _password = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  String error = "";
-  FirebaseAuth fireBaseInstance = FirebaseAuth.instance;
+  AuthService authService = AuthService();
 
   @override
   void dispose() {
@@ -25,23 +23,6 @@ class _SignInState extends State<SignIn> {
     _email.dispose();
     _password.dispose();
     super.dispose();
-  }
-
-  Future signIn() async {
-    try {
-      await fireBaseInstance.signInWithEmailAndPassword(
-          email: _email.text.trim(),
-          password: _password.text.trim()
-      );
-    } on FirebaseAuthException catch (e) {
-      if (e.code == 'user-not-found') {
-        setState(() => error = 'Cannot find user');
-      } else {
-        setState(() => error = 'An error occurred. Please try again later.');
-      }
-    } catch (e) {
-      setState(() => error = 'An error occurred. Please try again later.');
-    }
   }
 
   @override
@@ -139,7 +120,7 @@ class _SignInState extends State<SignIn> {
                   const SizedBox(height:20),
 
                   Text(
-                    error,
+                    authService.error,
                     style: const TextStyle(
                       color: Colors.red,
                       fontSize: 14,
@@ -151,10 +132,14 @@ class _SignInState extends State<SignIn> {
                   SizedBox(
                     width: 150,
                     child: ElevatedButton(
-                      onPressed: () {
+                      onPressed: () async {
                         if (_formKey.currentState!.validate()) {
-                          signIn();
+                          await authService.signIn(_email.text.trim(), _password.text.trim(), context);
+                        } else {
+                          authService.error = 'Please fill in your details';
                         }
+                        setState(() {
+                        });
                       },
                       style: ButtonStyle(
                         backgroundColor: MaterialStateProperty.all<Color>(Colors.red),
