@@ -1,6 +1,5 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:orbital_appllergy/screens/SignIn.dart';
+import 'package:orbital_appllergy/service/AuthService.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -8,12 +7,7 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
-    /* ! means that we are sure that the currentUser, which is nullable, is not
-    null at this point of time. Since we are in the home page, the user
-    is definitely not null hence its safe to use !.
-     */
-
-    final user = FirebaseAuth.instance.currentUser!;
+    AuthService authService = AuthService();
 
     return Scaffold(
       body: Center(
@@ -21,16 +15,10 @@ class HomePage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Text('Temporary home page'),
-            Text('Signed in as: ${user.email!}'),
+            Text('Signed in as: ${authService.user?.email}'),
             ElevatedButton(
                 onPressed: () async {
-                  await FirebaseAuth.instance.signOut();
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const SignIn()
-                    ),
-                  );
+                  await authService.signOut(context);
                 },
                 child: const Text('Log Out'),
             ),
