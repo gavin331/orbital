@@ -39,7 +39,7 @@ class SuccessfulRegistration extends StatelessWidget {
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => const HomePage()
+                        builder: (context) => HomePage()
                     ),
                   );
                 },
