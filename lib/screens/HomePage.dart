@@ -60,13 +60,6 @@ class HomePage extends StatelessWidget {
       body: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              'Signed in as: ${authService.user?.email}',
-              style: const TextStyle(
-                fontFamily: 'Poppins',
-                fontSize: 20,
-              ),
-            ),
             const SizedBox(height: 50),
             Row(
                 mainAxisAlignment: MainAxisAlignment.center,
