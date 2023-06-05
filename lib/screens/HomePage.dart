@@ -4,38 +4,6 @@ import 'package:flutter/material.dart';
 class HomePage extends StatelessWidget {
   const HomePage({Key? key}) : super(key: key);
 
-//   @override
-//   Widget build(BuildContext context) {
-
-//     AuthService authService = AuthService();
-
-//     return Scaffold(
-//       body: Center(
-//         child: Column(
-//           mainAxisAlignment: MainAxisAlignment.center,
-//           children: [
-//             const Text('Temporary home page'),
-//             Text('Signed in as: ${authService.user?.email}'),
-//             ElevatedButton(
-//                 onPressed: () async {
-//                   await authService.signOut(context);
-//                 },
-//                 child: const Text('Log Out'),
-//             ),
-//           ],
-//         ),
-//       )
-//     );
-//   }
-// }
-
-// import 'package:flutter/material.dart';
-
-// void main() => runApp(MaterialApp(
-//   home: HomeScreen(),
-// ));
-
-// class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -54,7 +22,7 @@ class HomePage extends StatelessWidget {
                   onPressed: () {}, // menu card pops up from the left
                 ),
                 SizedBox(width: 40.0),
-                Image.asset('windows/assets/images/apple.png', height: 40.0),
+                Image.asset('assets/apple.png', height: 40.0),
                 SizedBox(width: 15.0),
                 Text('Appllergy',
                     style: TextStyle(
