@@ -1,21 +1,14 @@
 import 'package:flutter/material.dart';
+import '../Reusables/UserProfileButton.dart';
 import '../service/AuthService.dart';
 
-class UserProfile extends StatefulWidget {
-  const UserProfile({Key? key}) : super(key: key);
+class UserProfile extends StatelessWidget {
+  UserProfile({Key? key}) : super(key: key);
 
-  @override
-  State<UserProfile> createState() => _UserProfileState();
-}
-
-class _UserProfileState extends State<UserProfile> with TickerProviderStateMixin {
   final AuthService _authService = AuthService();
 
   @override
   Widget build(BuildContext context) {
-
-    TabController _tabController = TabController(length: 3, vsync: this);
-
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.red[300],
@@ -50,7 +43,7 @@ class _UserProfileState extends State<UserProfile> with TickerProviderStateMixin
                   width: 120,
                   height: 120,
                   child: CircleAvatar(
-                      child: Icon(Icons.person, size: 50),
+                    child: Icon(Icons.person, size: 50),
                   ),
                 ),
                 Positioned(
@@ -88,94 +81,18 @@ class _UserProfileState extends State<UserProfile> with TickerProviderStateMixin
               ),
             ),
             const SizedBox(height: 20),
+            const Divider(color: Colors.black),
+            const SizedBox(height: 20),
 
             //Menu
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.red[100],
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(10.0),
-                  topRight: Radius.circular(10.0),
-                ),
-              ),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: TabBar(
-                  controller: _tabController,
-                  labelColor: Colors.black,
-                  unselectedLabelColor: Colors.grey,
-                  isScrollable: true,
-                  indicator: BoxDecoration(
-                    color: Colors.red[300], //Color when the tab is pressed.
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(10.0),
-                      topRight: Radius.circular(10.0),
-                    ),
-                  ),
-                  tabs: const [
-                    Tab(text: 'Your Allergens'),
-                    Tab(text: 'Allergenic Foods'),
-                    Tab(text: 'Your Symptoms'),
-                  ],
-                ),
-              ),
-            ),
-            Flexible(
-              child: Container(
-                color: Colors.red[100],
-                child: TabBarView(
-                  controller: _tabController,
-                  children: const [
-                    //TODO: Replace all these with their respective screens,
-                    //TODO: maybe a list view? Example given below.
-                    Text('Your Allergens Screen'),
-                    Text('Allergenic Foods Screen'),
-                    Text('Your Symptoms Screen'),
-                  ],
-                ),
-              ),
-            ),
+            const UserProfileButton(title: 'My Allergens', icon: Icons.warning),
+            const SizedBox(height: 20),
+            const UserProfileButton(title: 'Allergenic foods', icon: Icons.fastfood_sharp),
+            const SizedBox(height: 20),
+            const UserProfileButton(title: 'My Symptoms', icon: Icons.sick),
           ],
         ),
       ),
     );
   }
 }
-
-/*
-Flexible(
-  child: Container(
-    color: Colors.red[100],
-    child: TabBarView(
-      controller: _tabController,
-      children: [
-        ListView(
-          children: const [
-            // Content for Your Allergens tab
-            ListTile(title: Text('Allergen 1')),
-            ListTile(title: Text('Allergen 2')),
-            ListTile(title: Text('Allergen 3')),
-            // ...
-          ],
-        ),
-        ListView(
-          children: const [
-            // Content for Allergenic Foods tab
-            ListTile(title: Text('Food 1')),
-            ListTile(title: Text('Food 2')),
-            ListTile(title: Text('Food 3')),
-            // ...
-          ],
-        ),
-        ListView(
-          children: const [
-            // Content for Your Symptoms tab
-            ListTile(title: Text('Symptom 1')),
-            ListTile(title: Text('Symptom 2')),
-            ListTile(title: Text('Symptom 3')),
-            // ...
-          ],
-        ),
-      ],
-    ),
- */

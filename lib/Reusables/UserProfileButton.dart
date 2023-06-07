@@ -12,7 +12,11 @@ class UserProfileButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return ElevatedButton(
       onPressed: () {
+<<<<<<< HEAD
         //Brings the user to the screen that the button specifies.
+=======
+
+>>>>>>> bd5feb558405a8e0ca596b3d961dca0015bddaee
       },
       style: ButtonStyle(
         backgroundColor: MaterialStateProperty.all<Color>(Colors.red[100]!),
