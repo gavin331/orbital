@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../service/AuthService.dart';
+import 'FindAllergen.dart';
 import 'SideMenu.dart';
 
 class HomePage extends StatelessWidget {
@@ -63,7 +64,14 @@ class HomePage extends StatelessWidget {
                     height: 100.0,
                     width: 100.0,
                     child: TextButton(
-                      onPressed: () {}, // go to Find Allergen screen
+                      onPressed: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const FindAllergen()
+                            )
+                        );
+                      }, // go to Find Allergen screen
                       style: ButtonStyle(
                         backgroundColor:
                             MaterialStateProperty.resolveWith<Color>((states) {
