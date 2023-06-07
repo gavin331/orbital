@@ -18,7 +18,7 @@ class Wrapper extends StatelessWidget {
         builder: (context, snapshot) {
           //snapshot.hasData is true when the user is logged in and false otherwise
           if (snapshot.hasData) {
-            return const HomePage();
+            return HomePage();
           } else {
             return const SignIn();
           }
