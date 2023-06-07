@@ -34,15 +34,10 @@ class HomePage extends StatelessWidget {
                     _scaffoldKey.currentState?.openDrawer();
                   }, // menu card pops up from the left
                 ),
-                const SizedBox(width: 40.0),
-
-                //Logo and title
-                Image.asset(
-                  'assets/apple.png',
-                  height: 40.0,
-                ),
-                const SizedBox(width: 15.0),
-                const Text('Appllergy',
+                SizedBox(width: 40.0),
+                Image.asset('assets/apple.png', height: 40.0),
+                SizedBox(width: 15.0),
+                Text('Appllergy',
                     style: TextStyle(
                         fontSize: 32.0,
                         fontFamily: 'Poppins'
