@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:orbital_appllergy/screens/UserProfile.dart';
 import 'package:orbital_appllergy/service/AuthService.dart';
 
 class SideMenu extends StatelessWidget {
@@ -41,9 +42,9 @@ class SideMenu extends StatelessWidget {
                   ),
                   currentAccountPicture: const CircleAvatar(
                     //TODO: Change to profile pic of each user.
-                    child: ClipOval(
-                      child: Icon(Icons.person),
-                    )
+                      child: ClipOval(
+                        child: Icon(Icons.person),
+                      )
                   ),
                   decoration: const BoxDecoration(
                     image: DecorationImage(
@@ -66,7 +67,11 @@ class SideMenu extends StatelessWidget {
                   ),
                   onTap: () {
                     Navigator.pop(context); // Close the side menu
-                    // TODO: Navigate to the User Profile screen
+                    //TODO: Display a userprofile screen when tapped.
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => UserProfile()),
+                    );
                   },
                 ),
                 const Divider(
@@ -108,7 +113,7 @@ class SideMenu extends StatelessWidget {
                   },
                 ),
                 const Divider(
-                  color: Colors.black
+                    color: Colors.black
                 ),
 
                 //Log out
