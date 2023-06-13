@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-// import 'package:orbital_appllergy/service/AuthService.dart';
 import 'package:flutter_sticky_header/flutter_sticky_header.dart';
 
 class FindAllergen extends StatefulWidget {
@@ -10,53 +9,7 @@ class FindAllergen extends StatefulWidget {
 }
 
 class _FindAllergenState extends State<FindAllergen> {
-  List<Widget> widgets = [
-    Container(
-      width: 300,
-      decoration: BoxDecoration(
-        border: Border.all(
-          color: Colors.red,
-          width: 1.0,
-        ),
-        borderRadius: BorderRadius.circular(8.0),
-      ),
-      child: TextFormField(
-        decoration: InputDecoration(
-          hintText: 'Enter food',
-          border: InputBorder.none,
-          contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-        ),
-      ),
-    ),
-  ];
-
-  void toggle() {
-    setState(() {
-      widgets.add(
-        const SizedBox(height: 10),
-      );
-      widgets.add(
-        Container(
-          width: 300,
-          decoration: BoxDecoration(
-            border: Border.all(
-              color: Colors.red, // Border color
-              width: 1.0, // Border width
-            ),
-            borderRadius: BorderRadius.circular(8.0), // Border radius
-          ),
-          child: TextFormField(
-            decoration: InputDecoration(
-              hintText: 'Enter food',
-              border: InputBorder.none, // Remove the default border
-              contentPadding: EdgeInsets.symmetric(horizontal: 10),
-              alignLabelWithHint: true,
-            ),
-          ),
-        ),
-      );
-    });
-  }
+  List<TextEditingController> listController = [TextEditingController()];
 
   @override
   Widget build(BuildContext context) {
@@ -74,26 +27,37 @@ class _FindAllergenState extends State<FindAllergen> {
         ),
         centerTitle: true,
         backgroundColor: Colors.red[100],
+        actions: [
+          //TODO: Put this in the reusable folder to cache it.
+          CircleAvatar(
+            backgroundColor: Colors.white,
+            child: IconButton(
+              onPressed: () {
+                // Calls the emergency contact
+              },
+              icon: const Icon(
+                Icons.phone,
+                color: Colors.red,
+              ),
+            ),
+          )
+        ],
       ),
       body: CustomScrollView(
         slivers: [
           SliverStickyHeader(
             header: Container(
-              height: 65,
-              decoration: BoxDecoration(
-                color: Colors.red[200]!,
-                borderRadius: BorderRadius.circular(8.0),
-              ),
-              child: Center(
-                child: Text(
-                  'Find out the exact allergen causing your food allergy!',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20.0,
-                    fontFamily: 'Poppins',
-                  ),
-                  textAlign: TextAlign.center, // Center the text
+              color: Colors.red[200],
+              width: double.infinity,
+              padding: const EdgeInsets.all(10),
+              child: const Text(
+                'Find out the exact allergen causing your food allergy!',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontFamily: 'Poppins',
+                  color: Colors.white,
                 ),
+                textAlign: TextAlign.center,
               ),
             ),
             sliver: SliverList(
@@ -101,37 +65,90 @@ class _FindAllergenState extends State<FindAllergen> {
                     (context, index) {
                   return Column(
                     children: [
-                      SizedBox(height: 50.0),
-                      Column(
-                        children: widgets,
-                      ),
-                      SizedBox(height: 10.0),
-                      ElevatedButton(
-                        onPressed: () {
-                          toggle();
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red[300],
-                        ),
-                        child: const Icon(Icons.add),
-                      ),
-                      SizedBox(height: 5.0),
-                      ElevatedButton(
-                        onPressed: () {
-                          // Finds allergen
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red[400],
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
+                      const SizedBox(height: 10),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            width: 300,
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: Colors.red,
+                                width: 1.0,
+                              ),
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                            child: TextFormField(
+                              controller: listController[index],
+                              decoration: InputDecoration(
+                                hintText: 'Enter food',
+                                border: InputBorder.none,
+                                contentPadding:
+                                const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 14),
+                                suffixIcon: IconButton(
+                                  onPressed: () {
+                                    //Deletes the text field.
+                                    setState(() {
+                                      listController[index].clear();
+                                      listController[index].dispose();
+                                      listController.removeAt(index);
+                                    });
+                                  },
+                                  icon: Icon(
+                                    Icons.delete,
+                                    color: Colors.red[300],
+                                  ),
+                                ),
+                              ),
+                            ),
                           ),
-                        ),
-                        child: const Text('Find Allergen'),
+                        ],
                       ),
                     ],
                   );
                 },
-                childCount: 1,
+                childCount: listController.length,
+              ),
+            ),
+          ),
+
+          //Add button and Find Allergen Button
+          SliverPadding(
+            padding: const EdgeInsets.all(20.0),
+            sliver: SliverToBoxAdapter(
+              child: Column(
+                children: [
+                  const SizedBox(height: 20),
+
+                  //Add Button
+                  ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                        listController.add(TextEditingController());
+                      });
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red[300],
+                    ),
+                    child: const Icon(Icons.add),
+                  ),
+                  const SizedBox(height: 5.0),
+
+                  //Find Allergen button
+                  ElevatedButton(
+                    onPressed: () {
+                      // Finds allergen
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red[400],
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
+                    child: const Text('Find Allergen'),
+                  ),
+                ],
               ),
             ),
           ),
@@ -139,12 +156,4 @@ class _FindAllergenState extends State<FindAllergen> {
       ),
     );
   }
-}
-
-void main() {
-  runApp(
-    const MaterialApp(
-      home: FindAllergen(),
-    ),
-  );
 }
