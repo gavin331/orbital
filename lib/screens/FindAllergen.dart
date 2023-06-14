@@ -208,7 +208,6 @@ class _FindAllergenState extends State<FindAllergen> {
     );
   }
 }
-
 String _findCommonDescription(List<String> descriptions) {
   // Count the occurrences of each description
   Map<String, int> descriptionCount = {};
