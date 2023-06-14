@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_sticky_header/flutter_sticky_header.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class FindAllergen extends StatefulWidget {
   const FindAllergen({Key? key}) : super(key: key);
@@ -136,9 +137,59 @@ class _FindAllergenState extends State<FindAllergen> {
                   const SizedBox(height: 5.0),
 
                   //Find Allergen button
+                  // ElevatedButton(
+                  //   onPressed: () {
+                  //     // Finds allergen
+                  //   },
+                  //   style: ElevatedButton.styleFrom(
+                  //     backgroundColor: Colors.red[400],
+                  //     shape: RoundedRectangleBorder(
+                  //       borderRadius: BorderRadius.circular(20),
+                  //     ),
+                  //   ),
+                  //   child: const Text('Find Allergen'),
+                  // ),
                   ElevatedButton(
-                    onPressed: () {
-                      // Finds allergen
+                    onPressed: () async {
+                      // Get the entered food names from the text controllers
+                      List<String> foodNames = [];
+                      for (var controller in listController) {
+                        foodNames.add(controller.text.trim());
+                      }
+
+                      // Query the Firestore collection for the matching common names
+                      QuerySnapshot<Map<String, dynamic>> snapshot = await FirebaseFirestore.instance
+                          .collection('food_allergen')
+                          .where('Common Name', whereIn: foodNames)
+                          .get();
+
+                      // Extract the descriptions from the query snapshot
+                      List<String> descriptions = [];
+                      for (var doc in snapshot.docs) {
+                        descriptions.add(doc['Description'] as String);
+                      }
+
+                      // Find the common description among the matching common names
+                      String commonDescription = _findCommonDescription(descriptions);
+
+                      // Display the common description in a text box
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: const Text('Common Allergen Description'),
+                            content: Text(commonDescription),
+                            actions: [
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                                child: const Text('OK'),
+                              ),
+                            ],
+                          );
+                        },
+                      );
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.red[400],
@@ -156,4 +207,27 @@ class _FindAllergenState extends State<FindAllergen> {
       ),
     );
   }
+}
+String _findCommonDescription(List<String> descriptions) {
+  // Count the occurrences of each description
+  Map<String, int> descriptionCount = {};
+  for (var description in descriptions) {
+    if (descriptionCount.containsKey(description)) {
+      descriptionCount[description] = descriptionCount[description]! + 1;
+    } else {
+      descriptionCount[description] = 1;
+    }
+  }
+
+  // Find the description with the maximum count
+  String commonDescription = '';
+  int maxCount = 0;
+  for (var entry in descriptionCount.entries) {
+    if (entry.value > maxCount) {
+      commonDescription = entry.key;
+      maxCount = entry.value;
+    }
+  }
+
+  return commonDescription;
 }
