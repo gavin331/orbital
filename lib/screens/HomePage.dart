@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:orbital_appllergy/screens/FindAllergen.dart';
 import '../service/AuthService.dart';
-import 'FindAllergen.dart';
 import 'SideMenu.dart';
 
 class HomePage extends StatelessWidget {
   HomePage({Key? key}) : super(key: key);
 
-  AuthService authService = AuthService();
+  final AuthService authService = AuthService();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
@@ -36,10 +35,10 @@ class HomePage extends StatelessWidget {
                     _scaffoldKey.currentState?.openDrawer();
                   }, // menu card pops up from the left
                 ),
-                SizedBox(width: 40.0),
+                const SizedBox(width: 40.0),
                 Image.asset('assets/apple.png', height: 40.0),
-                SizedBox(width: 15.0),
-                Text('Appllergy',
+                const SizedBox(width: 15.0),
+                const Text('Appllergy',
                     style: TextStyle(
                         fontSize: 32.0,
                         fontFamily: 'Poppins'

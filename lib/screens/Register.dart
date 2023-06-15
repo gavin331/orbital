@@ -10,6 +10,7 @@ class Register extends StatefulWidget {
 
 class _RegisterState extends State<Register> {
 
+  final TextEditingController _username = TextEditingController();
   final TextEditingController _email = TextEditingController();
   final TextEditingController _password = TextEditingController();
   final TextEditingController _confirmPassword = TextEditingController();
@@ -19,6 +20,7 @@ class _RegisterState extends State<Register> {
   //Dispose the controller when its no longer needed to avoid memory leak.
   @override
   void dispose() {
+    _username.dispose();
     _email.dispose();
     _password.dispose();
     _confirmPassword.dispose();
@@ -69,104 +71,58 @@ class _RegisterState extends State<Register> {
                   ),
                   const SizedBox(height:30),
 
+                  //Username
+                  _CustomTextField(controller: _username, hintText: 'Username',
+                      prefixIcon: Icons.person, obscureText: false,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter a username';
+                        }
+                        return null;
+                      }),
+                  const SizedBox(height:20),
+
                   //Email
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 0),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.grey[200],
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: Colors.white),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(10, 0, 0, 0),
-                        child: TextFormField(
-                          controller: _email,
-                          decoration: const InputDecoration(
-                            hintText: 'Email',
-                            border: InputBorder.none,
-                            prefixIcon: Icon(Icons.email),
-                          ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter an email';
-                            } else if (!RegExp(r'^[\w-]+(\.[\w-]+)*@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*(\.[a-zA-Z]{2,})$',)
+                  _CustomTextField(controller: _email, hintText: 'Email',
+                      prefixIcon: Icons.email, obscureText: false,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter an email';
+                        } else if (!RegExp(r'^[\w-]+(\.[\w-]+)*@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*(\.[a-zA-Z]{2,})$',)
                             .hasMatch(value)){
-                              return 'Please enter a valid email';
-                            }
-                          },
-                        ),
-                      ),
-                    ),
-                  ),
+                          return 'Please enter a valid email';
+                        }
+                        return null;
+                      }),
                   const SizedBox(height:20),
 
                   //Password
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 0),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.grey[200],
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: Colors.white),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(10,0,0,0),
-                        child: TextFormField(
-                          controller: _password,
-                          decoration: const InputDecoration(
-                            hintText: 'Password',
-                            border: InputBorder.none,
-                            prefixIcon: Icon(Icons.lock),
-                          ),
-                          obscureText: true,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter a password';
-                            } else if (value.length < 6) {
-                              return 'Password length must be at least 6 characters';
-                            } else {
-                              return null;
-                            }
-                          },
-                        ),
-                      ),
-                    ),
-                  ),
+                  _CustomTextField(controller: _password, hintText: 'Password',
+                      prefixIcon: Icons.lock, obscureText: true,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter a password';
+                        } else if (value.length < 6) {
+                          return 'Password length must be at least 6 characters';
+                        } else {
+                          return null;
+                        }
+                      }),
                   const SizedBox(height:20),
 
                   //Confirm Password
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 0),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.grey[200],
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: Colors.white),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(10,0,0,0),
-                        child: TextFormField(
-                          controller: _confirmPassword,
-                          decoration: const InputDecoration(
-                            hintText: 'Confirm Password',
-                            border: InputBorder.none,
-                            prefixIcon: Icon(Icons.lock),
-                          ),
-                          obscureText: true,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please confirm your password';
-                            } else if (value != _password.text.trim()){
-                              return 'Password do not match!';
-                            } else {
-                              return null;
-                            }
-                          },
-                        ),
-                      ),
-                    ),
-                  ),
+                  _CustomTextField(controller: _confirmPassword,
+                      hintText: 'Confirm Password',
+                      prefixIcon: Icons.lock, obscureText: true,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please confirm your password';
+                        } else if (value != _password.text.trim()){
+                          return 'Password do not match!';
+                        } else {
+                          return null;
+                        }
+                      }),
                   const SizedBox(height:20),
 
                   Text(
@@ -185,7 +141,7 @@ class _RegisterState extends State<Register> {
                       onPressed: () async {
                         if (_formKey.currentState!.validate()) {
                           await authService.register(_email.text.trim(),
-                              _password.text.trim(), context);
+                              _password.text.trim(), _username.text.trim(),context);
                         } else {
                           authService.error = "";
                         }
@@ -216,6 +172,54 @@ class _RegisterState extends State<Register> {
                 ],
               ),
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CustomTextField extends StatelessWidget {
+
+  final TextEditingController controller;
+  final String hintText;
+  final IconData prefixIcon;
+  final bool obscureText;
+  final String? Function(String?)? validator;
+
+  const _CustomTextField({Key? key,
+    required this.controller,
+    required this.hintText,
+    required this.prefixIcon,
+    required this.obscureText,
+    required this.validator,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 0),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.grey[200],
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: Colors.white),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(10, 0, 0, 0),
+          child: TextFormField(
+            controller: controller,
+            decoration: InputDecoration(
+              hintText: hintText,
+              border: InputBorder.none,
+              prefixIcon: Padding(
+                padding: const EdgeInsets.only(left: 8.0, right: 12),
+                child: Icon(prefixIcon),
+              ),
+              contentPadding: const EdgeInsets.symmetric(vertical: 15),
+            ),
+            obscureText: obscureText,
+            validator: validator,
           ),
         ),
       ),

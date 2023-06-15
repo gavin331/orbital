@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:orbital_appllergy/Reusables/EmergencyCallButton.dart';
 
 class EmergencySettings extends StatefulWidget {
   const EmergencySettings({Key? key}) : super(key: key);
@@ -192,20 +193,8 @@ class _EmergencySettingsState extends State<EmergencySettings> {
         ),
         centerTitle: true,
         elevation: 0,
-        actions: [
-          //TODO: Cache this circleAvatar into the Reusables folder
-          CircleAvatar(
-            backgroundColor: Colors.white,
-            child: IconButton(
-              onPressed: () {
-                // Calls the emergency contact
-              },
-              icon: const Icon(
-                Icons.phone,
-                color: Colors.red,
-              ),
-            ),
-          )
+        actions: const [
+          EmergencyCallButton(),
         ],
       ),
       body: Center(

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:orbital_appllergy/screens/LinkedAccounts.dart';
 import 'package:orbital_appllergy/screens/UserProfile.dart';
+import 'package:orbital_appllergy/screens/EmergencySettings.dart';
 import 'package:orbital_appllergy/service/AuthService.dart';
 
 class SideMenu extends StatelessWidget {
@@ -24,9 +26,9 @@ class SideMenu extends StatelessWidget {
               padding: EdgeInsets.zero,
               children: [
                 UserAccountsDrawerHeader(
-                  accountName: const Text(
-                    'Mom',
-                    style: TextStyle(
+                  accountName: Text(
+                    '${_authService.user?.displayName}',
+                    style: const TextStyle(
                       fontFamily: 'Poppins',
                       fontSize: 15,
                       color: Colors.black,
@@ -70,7 +72,7 @@ class SideMenu extends StatelessWidget {
                     //TODO: Display a userprofile screen when tapped.
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => UserProfile()),
+                      MaterialPageRoute(builder: (context) => const UserProfile()),
                     );
                   },
                 ),
@@ -82,7 +84,7 @@ class SideMenu extends StatelessWidget {
                 ListTile(
                   trailing: const Icon(Icons.settings),
                   title: const Text(
-                    'Settings',
+                    'Emergency Settings',
                     style: TextStyle(
                       fontFamily: 'Poppins',
                       fontSize: 15,
@@ -91,6 +93,10 @@ class SideMenu extends StatelessWidget {
                   onTap: () {
                     Navigator.pop(context); // Close the side menu
                     // TODO: Navigate to the Settings screen
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const EmergencySettings()),
+                    );
                   },
                 ),
                 const Divider(
@@ -110,6 +116,10 @@ class SideMenu extends StatelessWidget {
                   onTap: () {
                     Navigator.pop(context); // Close the side menu
                     // TODO: Navigate to the Linked Accounts screen
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const LinkedAccounts()),
+                    );
                   },
                 ),
                 const Divider(
