@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:orbital_appllergy/service/AuthService.dart';
+import 'package:orbital_appllergy/service/FirestoreService.dart';
 
 class LinkedAccounts extends StatefulWidget {
   const LinkedAccounts({Key? key}) : super(key: key);
@@ -11,10 +12,8 @@ class LinkedAccounts extends StatefulWidget {
 
 class _LinkedAccountsState extends State<LinkedAccounts> with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  final _formKey = GlobalKey<FormState>();
-  final TextEditingController _username = TextEditingController();
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final AuthService _authService = AuthService();
+  final String? userDisplayName = AuthService().user?.displayName;
+  final FireStoreService _fireStoreService = FireStoreService();
 
   @override
   void initState() {
@@ -60,22 +59,26 @@ class _LinkedAccountsState extends State<LinkedAccounts> with SingleTickerProvid
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
+        onPressed: () async {
           showDialog(
             context: context,
             builder: (BuildContext context) {
+              final formKey = GlobalKey<FormState>();
+              final TextEditingController username = TextEditingController();
               return AlertDialog(
                 title: const Text('Send Friend Request'),
                 content: Form(
-                  key: _formKey,
+                  key: formKey,
                   child: TextFormField(
-                    controller: _username,
+                    controller: username,
                     decoration: const InputDecoration(
                       hintText: 'Enter Username',
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Please enter a username';
+                      } else if (value == userDisplayName) {
+                        return 'Do not enter your own username';
                       }
                       return null;
                     },
@@ -85,13 +88,42 @@ class _LinkedAccountsState extends State<LinkedAccounts> with SingleTickerProvid
                   //Send Button
                   TextButton(
                     onPressed: () async {
-                      if (_formKey.currentState?.validate() == true) {
+                      if (formKey.currentState?.validate() == true) {
+                        String name = username.text;
+                        bool usernameExists = await _fireStoreService.findUsernameInDatabase(name);
                         // Manually sending the friend request using the add icon.
-                        _sendFriendRequest(_authService.user?.displayName,
-                            _username.text, 'Pending');
-                        Navigator.of(context).pop(); // Close the dialog
+                        if (usernameExists) {
+                          try {
+                            await _fireStoreService.sendFriendRequest(userDisplayName,
+                                username.text, 'Pending');
+                            // do the check for context.mounted to remove
+                            //'Don't use BuildContext across async gaps' warning.
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Friend Request Sent')),
+                              );
+                            }
+                          } catch (e) {
+                            String error = 'You have already sent a friend request';
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(error)),
+                              );
+                            }
+                          }
+                          if (context.mounted) {
+                            Navigator.of(context).pop();
+                          }
+                        } else {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Username does not exist')),
+                            );
+                            Navigator.of(context).pop(); // Close the dialog
+                          }
                         }
-                      },
+                      }
+                    },
                     child: const Text('Send'),
                   ),
 
@@ -113,73 +145,58 @@ class _LinkedAccountsState extends State<LinkedAccounts> with SingleTickerProvid
   }
 
   Widget _buildFriendList() {
-    return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-      stream: _firestore.collection('users').doc(_authService.user?.uid).snapshots(),
-      builder: (context, snapshot) {
-        if (snapshot.hasData) {
-          final userDoc = snapshot.data!;
-          final friendList = userDoc.data()?['friendlist'] as List<dynamic>;
-
-          return ListView.builder(
-            itemCount: friendList.length,
-            itemBuilder: (context, index) {
-              final friendName = friendList[index].toString();
-              return Container(
-                margin: const EdgeInsets.fromLTRB(10, 10, 10, 5),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  color: Colors.red[200],
-                ),
-                child: ListTile(
-                  title: Text(friendName),
-                  leading: const CircleAvatar(
-                    child: Icon(Icons.person),
+    return Center(
+      child: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+        stream: _fireStoreService.getUserDocSnapshot(),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            final userDoc = snapshot.data!;
+            final friendList = userDoc.data()?['friendlist'] as List<dynamic>;
+            return ListView.builder(
+              itemCount: friendList.length,
+              itemBuilder: (context, index) {
+                final friendName = friendList[index].toString();
+                return Container(
+                  margin: const EdgeInsets.fromLTRB(10, 10, 10, 5),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                    color: Colors.red[200],
                   ),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.remove_circle),
-                    onPressed: () async {
-                      // Remove friend from the list
-                      await userDoc.reference.update({
-                        'friendlist': FieldValue.arrayRemove([friendName]),
-                      });
-                      final friendRequestSnapshot = await _firestore.collection('friend_requests')
-                          .where('senderName', isEqualTo: _authService.user?.displayName)
-                          .where('receiverName', isEqualTo: friendName)
-                          .get();
-                      //Gets a list of all the documents included in this snapshot.
-                      final friendRequestDocs = friendRequestSnapshot.docs;
-                      if (friendRequestDocs.isNotEmpty) {
-                        final friendRequestDoc = friendRequestDocs.first;
-                        await friendRequestDoc.reference.delete();
-                      }
-                      setState(() {
-                      });
-                    },
+                  child: ListTile(
+                    title: Text(friendName),
+                    leading: const CircleAvatar(
+                      child: Icon(Icons.person),
+                    ),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.remove_circle),
+                      onPressed: () async {
+                        await _fireStoreService.removeFriend(userDoc, friendName);
+                        await _fireStoreService.deleteFriendRequest(friendName);
+                        setState(() {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Removed from friend list')),
+                          );
+                        });
+                      },
+                    ),
                   ),
-                ),
-              );
-            },
-          );
-        } else if (snapshot.hasError) {
-          return Text('Error: ${snapshot.error}');
-        } else {
-          return const CircularProgressIndicator();
-        }
-      },
+                );
+              },
+            );
+          } else if (snapshot.hasError) {
+            return Text('Error: ${snapshot.error}');
+          } else {
+            return const CircularProgressIndicator();
+          }
+        },
+      ),
     );
   }
 
 
   Widget _buildFriendRequestList() {
     return StreamBuilder<QuerySnapshot>(
-      /*
-      Filtering through the database where receiverName is equal to the
-      name of the current user.
-       */
-      stream: _firestore.collection('friend_requests')
-          .where('receiverName', isEqualTo: _authService.user?.displayName)
-          .where('status', isEqualTo: 'Pending')
-          .snapshots(),
+      stream: _fireStoreService.getFriendRequests(),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           final friendRequestDocs = snapshot.data!.docs;
@@ -208,25 +225,59 @@ class _LinkedAccountsState extends State<LinkedAccounts> with SingleTickerProvid
                         icon: const Icon(Icons.check),
                         onPressed: () async {
                           try {
-                            // Accept friend request
-                            await friendRequestDoc.reference.update({'status' : 'Accepted'});
-                            //Update the friendlist in the sender document.
-                            final userDocSnapshot = await _firestore.collection('users')
-                                .where('username', isEqualTo: friendRequestSenderName)
-                                .get();
-                            final userDocs = userDocSnapshot.docs;
-                            if (userDocs.isNotEmpty) {
-                              final userDoc = userDocs.first;
-                              await userDoc.reference.update({
-                                'friendlist': FieldValue.arrayUnion(
-                                    [_authService.user?.displayName]),
-                              });
+                            await _fireStoreService.acceptFriendRequest(friendRequestDoc, friendRequestSenderName);
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Accepted friend request')),
+                              );
                             }
-                            await _sendFriendRequest(_authService.user?.displayName,
-                                friendRequestSenderName, 'Pending');
+                            if (await _fireStoreService
+                                .validateFriendRequestHistory(userDisplayName, friendRequestSenderName)) {
+                              if (context.mounted) {
+                                showDialog(
+                                    context: context,
+                                    builder: (BuildContext context) {
+                                      return AlertDialog(
+                                        title: const Text('Friend request accepted'),
+                                        content: const Text('Send friend request back?'),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () async {
+                                              try {
+                                                await _fireStoreService.sendFriendRequest(userDisplayName,
+                                                    friendRequestSenderName, 'Pending');
+                                                if (context.mounted) {
+                                                  ScaffoldMessenger.of(context).showSnackBar(
+                                                    const SnackBar(content: Text('Friend request sent')),
+                                                  );
+                                                }
+                                              } catch (e) {
+                                                String error = 'You have already sent a friend request';
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                  SnackBar(content: Text(error)),
+                                                );
+                                              }
+                                              if (context.mounted) {
+                                                Navigator.of(context).pop();
+                                              }
+                                            },
+                                            child: const Text('OK'),
+                                          ),
+                                          TextButton(
+                                            onPressed: () {
+                                              Navigator.of(context).pop();
+                                            },
+                                            child: const Text('Cancel'),
+                                          ),
+                                        ],
+                                      );
+                                    }
+                                );
+                              }
+                            }
                           } catch (e) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Friend request sent')),
+                              const SnackBar(content: Text('An error occurred')),
                             );
                           }
                         },
@@ -236,7 +287,7 @@ class _LinkedAccountsState extends State<LinkedAccounts> with SingleTickerProvid
                         onPressed: () {
                           // Reject friend request
                           setState(() {
-                            friendRequestDoc.reference.delete();
+                            _fireStoreService.rejectFriendRequest(friendRequestDoc);
                           });
                         },
                       ),
@@ -253,34 +304,6 @@ class _LinkedAccountsState extends State<LinkedAccounts> with SingleTickerProvid
         }
       },
     );
-  }
-
-  Future<void> _sendFriendRequest(String? sender, String? receiver, String status) async {
-    try {
-      final querySnapshot = await _firestore
-          .collection('friend_requests')
-          .where('senderName', isEqualTo: sender)
-          .where('receiverName', isEqualTo: receiver)
-          .get();
-
-      if (querySnapshot.size > 0) {
-        //TODO: This print message is just to debug for now.
-        // A matching document already exists
-        print('Friend request already sent');
-        return;
-      } else {
-        await _firestore.collection('friend_requests').add({
-          'receiverName': receiver,
-          'senderName': sender,
-          'status': status,
-        });
-      }
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Friend request sent')),
-      );
-    } catch (e) {
-      print('Error sending friend request: $e');
-    }
   }
 }
 
