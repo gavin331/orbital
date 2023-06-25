@@ -117,7 +117,7 @@ class _RegisterState extends State<Register> {
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Please confirm your password';
-                        } else if (value != _password.text.trim()){
+                        } else if (value != _password.text){
                           return 'Password do not match!';
                         } else {
                           return null;
@@ -140,8 +140,8 @@ class _RegisterState extends State<Register> {
                     child: ElevatedButton(
                       onPressed: () async {
                         if (_formKey.currentState!.validate()) {
-                          await authService.register(_email.text.trim(),
-                              _password.text.trim(), _username.text.trim(),context);
+                          await authService.register(_email.text,
+                              _password.text, _username.text, context);
                         } else {
                           authService.error = "";
                         }

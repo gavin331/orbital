@@ -100,4 +100,27 @@ class FireStoreService {
         .where('status', isEqualTo: 'Pending')
         .snapshots();
   }
+
+  Future<void> saveToUserAllergen(List<String> commonElements) async {
+    final userDocSnapshot = await _firestore.collection('users')
+        .where('username', isEqualTo: _authService.user?.displayName)
+        .get();
+    final userDocs = userDocSnapshot.docs;
+    if (userDocs.isNotEmpty) {
+      final userDoc = userDocs.first;
+      for (String str in commonElements) {
+        await userDoc.reference.update({
+          'allergens': FieldValue.arrayUnion(
+              [str]),
+        });
+      }
+    }
+  }
+
+  Future<void> removeFromUserAllergen(DocumentSnapshot<Map<String, dynamic>> userDoc,
+      String allergen) async {
+    await userDoc.reference.update({
+      'allergens': FieldValue.arrayRemove([allergen]),
+    });
+  }
 }

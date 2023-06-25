@@ -1,4 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:orbital_appllergy/service/FirestoreService.dart';
 import '../service/AuthService.dart';
 
 class UserProfile extends StatefulWidget {
@@ -10,11 +12,12 @@ class UserProfile extends StatefulWidget {
 
 class _UserProfileState extends State<UserProfile> with TickerProviderStateMixin {
   final AuthService _authService = AuthService();
+  final FireStoreService _fireStoreService = FireStoreService();
 
   @override
   Widget build(BuildContext context) {
 
-    TabController _tabController = TabController(length: 3, vsync: this);
+    TabController tabController = TabController(length: 3, vsync: this);
 
     return Scaffold(
       appBar: AppBar(
@@ -71,9 +74,9 @@ class _UserProfileState extends State<UserProfile> with TickerProviderStateMixin
               ],
             ),
             const SizedBox(height: 10),
-            const Text(
-              'Mom',
-              style: TextStyle(
+            Text(
+              '${_authService.user?.displayName}',
+              style: const TextStyle(
                 fontFamily: 'Poppins',
                 fontSize: 15,
                 color: Colors.black,
@@ -101,7 +104,7 @@ class _UserProfileState extends State<UserProfile> with TickerProviderStateMixin
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: TabBar(
-                  controller: _tabController,
+                  controller: tabController,
                   labelColor: Colors.black,
                   unselectedLabelColor: Colors.grey,
                   isScrollable: true,
@@ -124,13 +127,46 @@ class _UserProfileState extends State<UserProfile> with TickerProviderStateMixin
               child: Container(
                 color: Colors.red[100],
                 child: TabBarView(
-                  controller: _tabController,
-                  children: const [
+                  controller: tabController,
+                  children: [
                     //TODO: Replace all these with their respective screens,
                     //TODO: maybe a list view? Example given below.
-                    Text('Your Allergens Screen'),
-                    Text('Allergenic Foods Screen'),
-                    Text('Your Symptoms Screen'),
+                    //Text('Your Allergens Screen'),
+                    StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+                      stream: _fireStoreService.getUserDocSnapshot(),
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData) {
+                          final userDoc = snapshot.data!;
+                          final allergenList = userDoc.data()?['allergens'] as List<dynamic>;
+                          return ListView.builder(
+                            itemCount: allergenList.length,
+                            itemBuilder: (context, index) {
+                              final allergenName = allergenList[index].toString();
+                              return ListTile(
+                                title: Text(allergenName),
+                                trailing: IconButton(
+                                  icon: const Icon(Icons.delete),
+                                  onPressed: () async {
+                                    await _fireStoreService.removeFromUserAllergen(userDoc, allergenName);
+                                    setState(() {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(content: Text('Removed from allergen list')),
+                                      );
+                                    });
+                                  },
+                                ),
+                              );
+                            },
+                          );
+                        } else if (snapshot.hasError) {
+                          return Text('Error: ${snapshot.error}');
+                        } else {
+                          return const CircularProgressIndicator();
+                        }
+                      },
+                    ),
+                    const Text('Allergenic Foods Screen'),
+                    const Text('Your Symptoms Screen'),
                   ],
                 ),
               ),
