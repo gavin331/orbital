@@ -218,6 +218,7 @@ class _FindAllergenState extends State<FindAllergen> {
           .where('Common Name', isLessThanOrEqualTo: foodName.toLowerCase() + '\uf8ff')
           .get());
     }
+
     // Combine the descriptions from the query snapshots
     List<List<String>> descriptionsList = [];
     for (var snapshot in snapshots) {
@@ -227,6 +228,7 @@ class _FindAllergenState extends State<FindAllergen> {
       }
       descriptionsList.add(descriptions);
     }
+
     // Find the common elements among the descriptions
     List<String> commonElements = [];
     if (descriptionsList.isNotEmpty) {
