@@ -138,7 +138,6 @@ class _FindAllergenState extends State<FindAllergen> {
                       for (var controller in listController) {
                         foodNames.add(controller.text.trim());
                       }
-                      print(foodNames);
 
                       // Find the common elements among the entered food names
                       List<String> commonElements =
@@ -210,12 +209,13 @@ class _FindAllergenState extends State<FindAllergen> {
     }
 
     // Query the Firestore collection for the matching common names
+    //TODO: There is a bug here because the Common Name field might not always be in lowercase.
     List<QuerySnapshot<Map<String, dynamic>>> snapshots = [];
     for (String foodName in foodNames) {
       snapshots.add(await FirebaseFirestore.instance
           .collection('food_allergen')
-          .where('Common Name', isGreaterThanOrEqualTo: foodName.toLowerCase())
-          .where('Common Name', isLessThanOrEqualTo: foodName.toLowerCase() + '\uf8ff')
+          .where('LowerCaseName', isGreaterThanOrEqualTo: foodName.toLowerCase())
+          .where('LowerCaseName', isLessThanOrEqualTo: foodName.toLowerCase() + '\uf8ff')
           .get());
     }
     // Combine the descriptions from the query snapshots
