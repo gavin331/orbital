@@ -96,7 +96,7 @@ class _LinkedAccountsState extends State<LinkedAccounts> with SingleTickerProvid
                           try {
                             await _fireStoreService.sendFriendRequest(userDisplayName,
                                 username.text, 'Pending');
-                            // do the check for context.mounted to remove
+                            // Do the check for context.mounted to remove
                             //'Don't use BuildContext across async gaps' warning.
                             if (context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
@@ -144,6 +144,7 @@ class _LinkedAccountsState extends State<LinkedAccounts> with SingleTickerProvid
     );
   }
 
+  //Builds the friend list in the LinkedAccounts screen
   Widget _buildFriendList() {
     return Center(
       child: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
@@ -162,11 +163,13 @@ class _LinkedAccountsState extends State<LinkedAccounts> with SingleTickerProvid
                     borderRadius: BorderRadius.circular(20),
                     color: Colors.red[200],
                   ),
-                  child: ListTile(
+                  child: ExpansionTile(
                     title: Text(friendName),
                     leading: const CircleAvatar(
                       child: Icon(Icons.person),
                     ),
+
+                    //Remove the friend from the friend list.
                     trailing: IconButton(
                       icon: const Icon(Icons.remove_circle),
                       onPressed: () async {
@@ -179,6 +182,72 @@ class _LinkedAccountsState extends State<LinkedAccounts> with SingleTickerProvid
                         });
                       },
                     ),
+                    children: [
+                      DefaultTabController(
+                        length: 3,
+                        child: Column(
+                          children: [
+                            const TabBar(
+                              tabs: [
+                                Tab(text: 'Allergens'),
+                                Tab(text: 'Allergic Foods'),
+                                Tab(text: 'Symptoms'),
+                              ],
+                            ),
+                            SizedBox(
+                              height: 150, // Adjust the height as per your requirement
+                              child: TabBarView(
+                                children: [
+                                  // Allergens content
+                                  StreamBuilder(
+                                    stream: _fireStoreService.getFriendDocSnapshot(friendName),
+                                    builder: (context, snapshot) {
+                                      if (snapshot.hasData) {
+                                        final friendDoc = snapshot.data!;
+                                        final friendAllergenList = friendDoc.data()?['allergens'] as List<dynamic>;
+                                        return ListView.builder(
+                                          itemCount: friendAllergenList.length,
+                                          itemBuilder: (context, index) {
+                                            final allergenName = friendAllergenList[index].toString();
+                                            return ListTile(
+                                              title: Text(allergenName),
+                                            );
+                                          },
+                                        );
+                                      } else if (snapshot.hasError) {
+                                        return Text('Error: ${snapshot.error}');
+                                      } else {
+                                        return const CircularProgressIndicator();
+                                      }
+                                    },
+                                  ),
+
+
+                                  // Allergenic Foods content
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    children: const [
+                                      Text('Food 1'),
+                                      Text('Food 2'),
+                                      // Add more allergenic foods as needed
+                                    ],
+                                  ),
+                                  // Symptoms content
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    children: const [
+                                      Text('Symptom 1'),
+                                      Text('Symptom 2'),
+                                      // Add more symptoms as needed
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 );
               },
@@ -194,6 +263,8 @@ class _LinkedAccountsState extends State<LinkedAccounts> with SingleTickerProvid
   }
 
 
+
+  //Builds the friend request list in the LinkedAccounts screen
   Widget _buildFriendRequestList() {
     return StreamBuilder<QuerySnapshot>(
       stream: _fireStoreService.getFriendRequests(),
@@ -307,6 +378,7 @@ class _LinkedAccountsState extends State<LinkedAccounts> with SingleTickerProvid
   }
 }
 
+//CustomTabsUI to be used in the bottom properties in the AppBar widget.
 class CustomTabsUI extends StatelessWidget {
   final String text;
   final IconData icon;
