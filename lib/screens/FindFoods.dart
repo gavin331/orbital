@@ -4,14 +4,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:orbital_appllergy/Reusables/EmergencyCallButton.dart';
 import 'package:orbital_appllergy/service/FirestoreService.dart';
 
-class FindAllergen extends StatefulWidget {
-  const FindAllergen({Key? key}) : super(key: key);
+class FindFoods extends StatefulWidget {
+  const FindFoods({Key? key}) : super(key: key);
 
   @override
-  State<FindAllergen> createState() => _FindAllergenState();
+  State<FindFoods> createState() => _FindFoodsState();
 }
 
-class _FindAllergenState extends State<FindAllergen> {
+class _FindFoodsState extends State<FindFoods> {
   List<TextEditingController> listController = [TextEditingController()];
   final FireStoreService _fireStoreService = FireStoreService();
 
@@ -22,7 +22,7 @@ class _FindAllergenState extends State<FindAllergen> {
       appBar: AppBar(
         toolbarHeight: 70, // Increase the toolbar height
         title: const Text(
-          "Find Allergen",
+          "Find Food(s)",
           style: TextStyle(
             fontSize: 32.0,
             fontFamily: 'Poppins',
@@ -32,7 +32,7 @@ class _FindAllergenState extends State<FindAllergen> {
         centerTitle: true,
         backgroundColor: Colors.red[100],
         actions: const [
-         EmergencyCallButton(),
+          EmergencyCallButton(),
         ],
       ),
       body: CustomScrollView(
@@ -43,7 +43,7 @@ class _FindAllergenState extends State<FindAllergen> {
               width: double.infinity,
               padding: const EdgeInsets.all(10),
               child: const Text(
-                'Find out the exact allergen causing your food allergy!',
+                'Find out which food(s) you have a chance of being allergic to!',
                 style: TextStyle(
                   fontSize: 20,
                   fontFamily: 'Poppins',
@@ -73,10 +73,9 @@ class _FindAllergenState extends State<FindAllergen> {
                             child: TextFormField(
                               controller: listController[index],
                               decoration: InputDecoration(
-                                hintText: 'Enter food',
+                                hintText: 'Enter allergen',
                                 border: InputBorder.none,
-                                contentPadding:
-                                const EdgeInsets.symmetric(
+                                contentPadding: const EdgeInsets.symmetric(
                                   horizontal: 10,
                                   vertical: 14,
                                 ),
@@ -107,7 +106,7 @@ class _FindAllergenState extends State<FindAllergen> {
             ),
           ),
 
-          //Add button and Find Allergen Button
+          //Add button and Find Food Button
           SliverPadding(
             padding: const EdgeInsets.all(20.0),
             sliver: SliverToBoxAdapter(
@@ -130,18 +129,21 @@ class _FindAllergenState extends State<FindAllergen> {
 
                   const SizedBox(height: 20),
 
-                  //Find Allergen button
+                  // Find Food Button
                   ElevatedButton(
                     onPressed: () async {
-                      // Get the entered food names from the text controllers
-                      List<String> foodNames = [];
+                      // Get the entered descriptions from the text controllers
+                      List<String> descriptions = [];
                       for (var controller in listController) {
-                        foodNames.add(controller.text.trim());
+                        descriptions.add(controller.text.trim());
                       }
 
-                      // Find the common elements among the entered food names
+                      // Find the common elements among the descriptions
                       List<String> commonElements =
-                      await _findCommonElements(foodNames);
+                      await _findCommonElements(descriptions);
+
+                      // Remove duplicates from the common elements list
+                      commonElements = commonElements.toSet().toList();
 
                       // Display the common elements in a text box
                       if (context.mounted) {
@@ -149,10 +151,10 @@ class _FindAllergenState extends State<FindAllergen> {
                           context: context,
                           builder: (BuildContext context) {
                             return AlertDialog(
-                              title: const Text('Possible Allergens'),
+                              title: const Text('Possible Foods'),
                               content: Text(commonElements.isNotEmpty
                                   ? commonElements.join(', ')
-                                  : 'No common allergen found!'),
+                                  : 'No possible food found in the database!'),
                               actions: [
                                 TextButton(
                                   onPressed: () {
@@ -165,10 +167,15 @@ class _FindAllergenState extends State<FindAllergen> {
                                     // TODO: Implement the save feature.
                                     // Add every string in the commonElements array
                                     // to the allergen list for the corresponding user doc in firebase.
-                                    await _fireStoreService.saveToUserAllergen(commonElements);
+                                    await _fireStoreService
+                                        .saveToUserAllergenicFoods(commonElements);
                                     if (context.mounted) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(content: Text('Saved to User Profile Successfully')),
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                              'Saved to User Profile Successfully'),
+                                        ),
                                       );
                                       Navigator.of(context).pop();
                                     }
@@ -187,7 +194,7 @@ class _FindAllergenState extends State<FindAllergen> {
                         borderRadius: BorderRadius.circular(20),
                       ),
                     ),
-                    child: const Text('Find Allergen'),
+                    child: const Text('Find Food(s)'),
                   ),
                 ],
               ),
@@ -198,50 +205,42 @@ class _FindAllergenState extends State<FindAllergen> {
     );
   }
 
-  Future<List<String>> _findCommonElements(List<String> foodNames) async {
+  Future<List<String>> _findCommonElements(List<String> descriptions) async {
     // TODO: Separate backend methods from the frontend UI.
-    // If the user doesnt input anything and presses find allergen,
-    // foodNames will store an empty string for each empty text field. So if
-    // foodNames only contain empty strings, then we just return an empty list.
-    foodNames.removeWhere((element) => element == "");
-    if (foodNames.isEmpty) {
+    // If the user doesn't input anything and presses find food,
+    // descriptions will store an empty string for each empty text field. So if
+    // descriptions only contain empty strings, then we just return an empty list.
+    descriptions.removeWhere((element) => element.isEmpty);
+    if (descriptions.isEmpty) {
       return [];
     }
 
     // Query the Firestore collection for the matching common names
-    //TODO: There is a bug here because the Common Name field might not always be in lowercase.
     List<QuerySnapshot<Map<String, dynamic>>> snapshots = [];
-    for (String foodName in foodNames) {
+    for (String description in descriptions) {
       snapshots.add(await FirebaseFirestore.instance
           .collection('food_allergen')
-          .where('LowerCaseName', isGreaterThanOrEqualTo: foodName.toLowerCase())
-          .where('LowerCaseName', isLessThanOrEqualTo: foodName.toLowerCase() + '\uf8ff')
+          .where('Description', isGreaterThanOrEqualTo: description.toLowerCase())
+          .where('Description', isLessThanOrEqualTo: description.toLowerCase() + '\uf8ff')
           .get());
     }
 
-    // Combine the descriptions from the query snapshots
-    List<List<String>> descriptionsList = [];
+    // Combine the common names from the query snapshots
+    List<List<String>> commonNamesList = [];
     for (var snapshot in snapshots) {
-      List<String> descriptions = [];
+      List<String> commonNames = [];
       for (var doc in snapshot.docs) {
-        descriptions.add(doc['Description'] as String);
+        commonNames.add(doc['Common Name'] as String);
       }
-      descriptionsList.add(descriptions);
+      commonNamesList.add(commonNames);
     }
 
-    // Find the common elements among the descriptions
+    // Combine the common names from the descriptions
     List<String> commonElements = [];
-    if (descriptionsList.isNotEmpty) {
-      commonElements = descriptionsList.first.toSet().toList();
-      for (int i = 1; i < descriptionsList.length; i++) {
-        commonElements = commonElements
-            .where((element) => descriptionsList[i].contains(element))
-            .toList();
-      }
+    for (var names in commonNamesList) {
+      commonElements.addAll(names);
     }
-    commonElements.removeWhere((element) => element.contains('unknown function'));
+
     return commonElements;
   }
 }
-
-// does not work for fungus and cockroach

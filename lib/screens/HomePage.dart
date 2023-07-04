@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:orbital_appllergy/screens/FindAllergen.dart';
+import 'package:orbital_appllergy/screens/FindFoods.dart';
 import '../service/AuthService.dart';
 import 'SideMenu.dart';
 
@@ -107,7 +108,14 @@ class HomePage extends StatelessWidget {
                     height: 100.0,
                     width: 100.0,
                     child: TextButton(
-                      onPressed: () {}, // go to Find foods screen
+                      onPressed: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const FindFoods()
+                            )
+                        );
+                      }, // go to Find foods screen
                       style: ButtonStyle(
                         backgroundColor:
                             MaterialStateProperty.resolveWith<Color>((states) {
