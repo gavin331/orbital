@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
 import 'AuthService.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -103,6 +102,7 @@ class FireStoreService {
         .snapshots();
   }
 
+  // User Profile Backend
   Future<void> saveToUserAllergen(List<String> commonElements) async {
     final userDocSnapshot = await _firestore.collection('users')
         .where('username', isEqualTo: _authService.user?.displayName)
@@ -125,7 +125,7 @@ class FireStoreService {
       'allergens': FieldValue.arrayRemove([allergen]),
     });
   }
-
+  
   Future<void> saveToUserAllergenicFoods(List<String> commonElements) async {
     final userDocSnapshot = await _firestore.collection('users')
         .where('username', isEqualTo: _authService.user?.displayName)
@@ -147,5 +147,19 @@ class FireStoreService {
     await userDoc.reference.update({
       'allergenicfoods': FieldValue.arrayRemove([allergen]),
     });
+  }
+  
+  //Linked Accounts Friends Expansion Tile Backend
+  Stream<DocumentSnapshot<Map<String, dynamic>>?> getFriendDocSnapshot(String friendName) {
+    return _firestore.collection('users')
+        .where('username', isEqualTo: friendName)
+        .snapshots()
+        .map((QuerySnapshot<Map<String, dynamic>> snapshot) {
+          if (snapshot.docs.isNotEmpty) {
+            return snapshot.docs.first;
+          } else {
+            return null;
+          }
+        });
   }
 }
