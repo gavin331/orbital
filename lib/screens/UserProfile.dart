@@ -198,7 +198,7 @@ class _UserProfileState extends State<UserProfile> with TickerProviderStateMixin
                       },
                     ),
 
-                    // Your Symptoms Screen
+                    // Your Symptoms Screen, placeholder
                     const Text('Your Symptoms Screen'),
                   ],
                 ),
