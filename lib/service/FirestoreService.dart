@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'AuthService.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 
 class FireStoreService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -121,6 +123,29 @@ class FireStoreService {
       String allergen) async {
     await userDoc.reference.update({
       'allergens': FieldValue.arrayRemove([allergen]),
+    });
+  }
+
+  Future<void> saveToUserAllergenicFoods(List<String> commonElements) async {
+    final userDocSnapshot = await _firestore.collection('users')
+        .where('username', isEqualTo: _authService.user?.displayName)
+        .get();
+    final userDocs = userDocSnapshot.docs;
+    if (userDocs.isNotEmpty) {
+      final userDoc = userDocs.first;
+      for (String str in commonElements) {
+        await userDoc.reference.update({
+          'allergenicfoods': FieldValue.arrayUnion(
+              [str]),
+        });
+      }
+    }
+  }
+
+  Future<void> removeFromUserAllergenicFoods(DocumentSnapshot<Map<String, dynamic>> userDoc,
+      String allergen) async {
+    await userDoc.reference.update({
+      'allergenicfoods': FieldValue.arrayRemove([allergen]),
     });
   }
 }
