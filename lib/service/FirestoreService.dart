@@ -125,7 +125,7 @@ class FireStoreService {
       'allergens': FieldValue.arrayRemove([allergen]),
     });
   }
-
+  
   Future<void> saveToUserAllergenicFoods(List<String> commonElements) async {
     final userDocSnapshot = await _firestore.collection('users')
         .where('username', isEqualTo: _authService.user?.displayName)
