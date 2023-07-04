@@ -16,7 +16,6 @@ class _UserProfileState extends State<UserProfile> with TickerProviderStateMixin
 
   @override
   Widget build(BuildContext context) {
-
     TabController tabController = TabController(length: 3, vsync: this);
 
     return Scaffold(
@@ -60,8 +59,8 @@ class _UserProfileState extends State<UserProfile> with TickerProviderStateMixin
                   bottom: 0,
                   right: 0,
                   child: Container(
-                    width:35,
-                    height:35,
+                    width: 35,
+                    height: 35,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(100),
                       color: Colors.red[100],
@@ -129,9 +128,7 @@ class _UserProfileState extends State<UserProfile> with TickerProviderStateMixin
                 child: TabBarView(
                   controller: tabController,
                   children: [
-                    //TODO: Replace all these with their respective screens,
-                    //TODO: maybe a list view? Example given below.
-                    //Text('Your Allergens Screen'),
+                    // Your Allergens Screen
                     StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
                       stream: _fireStoreService.getUserDocSnapshot(),
                       builder: (context, snapshot) {
@@ -165,7 +162,43 @@ class _UserProfileState extends State<UserProfile> with TickerProviderStateMixin
                         }
                       },
                     ),
-                    const Text('Allergenic Foods Screen'),
+
+                    // Allergenic Foods Screen
+                    StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+                      stream: _fireStoreService.getUserDocSnapshot(),
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData) {
+                          final userDoc = snapshot.data!;
+                          final allergenicFoodsList = userDoc.data()?['allergenicfoods'] as List<dynamic>;
+                          return ListView.builder(
+                            itemCount: allergenicFoodsList.length,
+                            itemBuilder: (context, index) {
+                              final foodName = allergenicFoodsList[index].toString();
+                              return ListTile(
+                                title: Text(foodName),
+                                trailing: IconButton(
+                                  icon: const Icon(Icons.delete),
+                                  onPressed: () async {
+                                    await _fireStoreService.removeFromUserAllergenicFoods(userDoc, foodName);
+                                    setState(() {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(content: Text('Removed from allergenic foods list')),
+                                      );
+                                    });
+                                  },
+                                ),
+                              );
+                            },
+                          );
+                        } else if (snapshot.hasError) {
+                          return Text('Error: ${snapshot.error}');
+                        } else {
+                          return const CircularProgressIndicator();
+                        }
+                      },
+                    ),
+
+                    // Your Symptoms Screen
                     const Text('Your Symptoms Screen'),
                   ],
                 ),
