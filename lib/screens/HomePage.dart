@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:orbital_appllergy/screens/FindAllergen.dart';
 import 'package:orbital_appllergy/screens/FindFoods.dart';
 import '../service/AuthService.dart';
+import 'CheckFood.dart';
 import 'SideMenu.dart';
 
 class HomePage extends StatelessWidget {
@@ -57,6 +58,20 @@ class HomePage extends StatelessWidget {
       body: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            Text(
+              'Hello ${authService.user?.displayName?? ""}!',
+              style: const TextStyle(
+                fontFamily: 'Poppins',
+                fontSize: 25,
+              ),
+            ),
+            const Text(
+              'Welcome back!',
+              style: TextStyle(
+                fontFamily: 'Poppins',
+                fontSize: 15,
+              ),
+            ),
             const SizedBox(height: 50),
             Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -155,7 +170,14 @@ class HomePage extends StatelessWidget {
                   height: 100.0,
                   width: 100.0,
                   child: TextButton(
-                    onPressed: () {}, // go to Check Food screen
+                    onPressed: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const CheckFood()
+                          )
+                      );
+                    }, // go to Check Food screen
                     style: ButtonStyle(
                       backgroundColor:
                           MaterialStateProperty.resolveWith<Color>((states) {

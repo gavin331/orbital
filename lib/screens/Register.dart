@@ -1,5 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:orbital_appllergy/service/AuthService.dart';
+import 'SuccessfulRegistration.dart';
 
 class Register extends StatefulWidget {
   const Register({Key? key}) : super(key: key);
@@ -9,13 +11,15 @@ class Register extends StatefulWidget {
 }
 
 class _RegisterState extends State<Register> {
-
+  //Text controllers
   final TextEditingController _username = TextEditingController();
   final TextEditingController _email = TextEditingController();
   final TextEditingController _password = TextEditingController();
   final TextEditingController _confirmPassword = TextEditingController();
+
   final _formKey = GlobalKey<FormState>();
   AuthService authService = AuthService();
+  String error = '';
 
   //Dispose the controller when its no longer needed to avoid memory leak.
   @override
@@ -126,7 +130,7 @@ class _RegisterState extends State<Register> {
                   const SizedBox(height:20),
 
                   Text(
-                    authService.error,
+                    error,
                     style: const TextStyle(
                       color: Colors.red,
                       fontSize: 14,
@@ -140,10 +144,28 @@ class _RegisterState extends State<Register> {
                     child: ElevatedButton(
                       onPressed: () async {
                         if (_formKey.currentState!.validate()) {
-                          await authService.register(_email.text,
-                              _password.text, _username.text, context);
+                          try {
+                            await authService.register(_email.text,
+                                _password.text, _username.text);
+                            if (context.mounted) {
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(builder: (context) => const SuccessfulRegistration()),
+                              );
+                            }
+                          } on FirebaseAuthException catch (e) {
+                            if (e.code == 'username-already-taken') {
+                              error = 'This username has already been taken';
+                            } else if (e.code == "email-already-in-use") {
+                              error = 'This email is already in use';
+                            } else {
+                              error = 'An error occurred. Please try again later.';
+                            }
+                          } catch (e) {
+                            error = 'An error occurred. Please try again later.';
+                          }
                         } else {
-                          authService.error = "";
+                          error = "";
                         }
                         setState(() {
                         });

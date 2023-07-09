@@ -1,5 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:orbital_appllergy/service/AuthService.dart';
+import 'HomePage.dart';
 import 'Register.dart';
 
 class SignIn extends StatefulWidget {
@@ -14,8 +16,10 @@ class _SignInState extends State<SignIn> {
   //text controllers
   final TextEditingController _email = TextEditingController();
   final TextEditingController _password = TextEditingController();
+
   final _formKey = GlobalKey<FormState>();
   AuthService authService = AuthService();
+  String error = '';
 
   @override
   void dispose() {
@@ -85,11 +89,13 @@ class _SignInState extends State<SignIn> {
                       }),
                   const SizedBox(height:20),
 
+                  //Error Message
                   Text(
-                    authService.error,
+                    error,
                     style: const TextStyle(
                       color: Colors.red,
                       fontSize: 14,
+                      fontFamily: 'Poppins',
                     ),
                   ),
                   const SizedBox(height:10),
@@ -100,9 +106,27 @@ class _SignInState extends State<SignIn> {
                     child: ElevatedButton(
                       onPressed: () async {
                         if (_formKey.currentState!.validate()) {
-                          await authService.signIn(_email.text, _password.text, context);
+                          try {
+                            await authService.signIn(_email.text, _password.text);
+                            if (context.mounted) {
+                               Navigator.pushReplacement(
+                                 context,
+                                 MaterialPageRoute(builder: (context) => HomePage()),
+                               );
+                            }
+                          } on FirebaseAuthException catch (e) {
+                            if (e.code == 'user-not-found') {
+                              error = 'Cannot find user';
+                            } else if (e.code == 'wrong-password') {
+                              error = 'The password is invalid.';
+                            } else {
+                              error = 'An error occurred. Please try again later.';
+                            }
+                          } catch (e) {
+                            error = 'An error occurred. Please try again later.';
+                          }
                         } else {
-                          authService.error = 'Please fill in your details';
+                          error = 'Please fill in your details';
                         }
                         setState(() {
                         });

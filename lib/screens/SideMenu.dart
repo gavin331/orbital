@@ -4,6 +4,8 @@ import 'package:orbital_appllergy/screens/UserProfile.dart';
 import 'package:orbital_appllergy/screens/EmergencySettings.dart';
 import 'package:orbital_appllergy/service/AuthService.dart';
 
+import 'SignIn.dart';
+
 class SideMenu extends StatelessWidget {
   SideMenu({Key? key}) : super(key: key);
 
@@ -138,7 +140,15 @@ class SideMenu extends StatelessWidget {
                   ),
                   onTap: () async {
                     Navigator.pop(context); // Close the side menu
-                    await _authService.signOut(context);
+                    await _authService.signOut();
+                    if (context.mounted) {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const SignIn()
+                        ),
+                      );
+                    }
                   },
                 ),
                 const Divider(
