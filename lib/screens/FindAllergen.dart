@@ -162,7 +162,6 @@ class _FindAllergenState extends State<FindAllergen> {
                                 ),
                                 TextButton(
                                   onPressed: () async {
-                                    // TODO: Implement the save feature.
                                     // Add every string in the commonElements array
                                     // to the allergen list for the corresponding user doc in firebase.
                                     await _fireStoreService.saveToUserAllergen(commonElements);
@@ -209,7 +208,6 @@ class _FindAllergenState extends State<FindAllergen> {
     }
 
     // Query the Firestore collection for the matching common names
-    //TODO: There is a bug here because the Common Name field might not always be in lowercase.
     List<QuerySnapshot<Map<String, dynamic>>> snapshots = [];
     for (String foodName in foodNames) {
       snapshots.add(await FirebaseFirestore.instance

@@ -1,12 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'AuthService.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-
 
 class FireStoreService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final AuthService _authService = AuthService();
 
+  //If friend request was sent before, return false else return true.
   Future<bool> validateFriendRequestHistory(String? sender, String? receiver) async {
     final querySnapshot = await _firestore
         .collection('friend_requests')
@@ -32,7 +31,6 @@ class FireStoreService {
 
 
   Future<void> sendFriendRequest(String? sender, String? receiver, String status) async {
-
     if (await validateFriendRequestHistory(sender, receiver)) {
       await _firestore.collection('friend_requests').add({
         'receiverName': receiver,
@@ -162,4 +160,57 @@ class FireStoreService {
           }
         });
   }
+
+  // Check Food backend
+  Future<bool> checkUserAllergenicFoods(String foodName) async {
+    final userDocSnapshot = await _firestore.collection('users')
+        .where('username', isEqualTo: _authService.user?.displayName)
+        .get();
+    final userDocs = userDocSnapshot.docs;
+    if (userDocs.isNotEmpty) {
+      final userDoc = userDocs.first;
+      final allergenicFoods = (userDoc.data()['allergenicfoods'] as List<dynamic>)
+        .map((food) => food.toLowerCase())
+        .toList();
+      final foodNameToLowerCase = foodName.toLowerCase();
+      return allergenicFoods.contains(foodNameToLowerCase);
+    } else {
+      return false;
+    }
+  }
+
+  Future<List<String>> getAllAllergensFromThisFood(String foodName) async {
+    QuerySnapshot<Map<String, dynamic>> snapshot = await _firestore
+        .collection('food_allergen')
+        .where('LowerCaseName', isEqualTo: foodName.toLowerCase())
+        .get();
+    List<String> listOfAllergens = [];
+    for (var doc in snapshot.docs) {
+      String description = doc['Description'] as String;
+      if (!description.contains('unknown function')) {
+        listOfAllergens.add(description);
+      }
+    }
+    return listOfAllergens;
+  }
+
+  Future<List<String>> findCommonAllergensForCheckFood(String foodName) async {
+    final userDocSnapshot = await _firestore.collection('users')
+        .where('username', isEqualTo: _authService.user?.displayName)
+        .get();
+    final userDocs = userDocSnapshot.docs;
+    List<String> commonAllergens = [];
+    List<String> allergensFromDatabase = await getAllAllergensFromThisFood(foodName);
+    if (userDocs.isNotEmpty) {
+      final userDoc = userDocs.first;
+      final allergens = (userDoc.data()['allergens'] as List<dynamic>).toList();
+      for (dynamic allergen in allergens) {
+        if (allergensFromDatabase.contains(allergen)) {
+          commonAllergens.add(allergen);
+        }
+      }
+    }
+    return commonAllergens;
+  }
+
 }
