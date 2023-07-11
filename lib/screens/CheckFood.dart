@@ -4,6 +4,8 @@ import 'package:orbital_appllergy/Reusables/EmergencyCallButton.dart';
 import 'package:orbital_appllergy/service/FirestoreService.dart';
 import 'package:awesome_dialog/awesome_dialog.dart';
 
+//TODO: If have time, we can list all the allergens out and apply the tick/cross.
+
 class CheckFood extends StatefulWidget {
   const CheckFood({super.key});
 

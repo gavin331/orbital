@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:orbital_appllergy/screens/FindAllergen.dart';
 import 'package:orbital_appllergy/screens/FindFoods.dart';
+import 'package:orbital_appllergy/screens/LogSymptoms.dart';
 import '../service/AuthService.dart';
 import 'CheckFood.dart';
 import 'SideMenu.dart';
@@ -217,7 +218,14 @@ class HomePage extends StatelessWidget {
                   height: 100.0,
                   width: 100.0,
                   child: TextButton(
-                    onPressed: () {}, // go to Check symptoms screen
+                    onPressed: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => LogSymptoms()
+                          )
+                      );
+                    }, // go to Check symptoms screen
                     style: ButtonStyle(
                       backgroundColor:
                           MaterialStateProperty.resolveWith<Color>((states) {
@@ -240,12 +248,13 @@ class HomePage extends StatelessWidget {
                           Icon(Icons.sick, color: Colors.white),
                           SizedBox(height: 12.0),
                           Text(
-                            '    Check\nsymptoms',
+                            '       Log\nsymptoms',
                             style: TextStyle(
-                                color: Colors.white,
-                                fontFamily: 'Poppins',
-                                fontSize: 11.0
+                              color: Colors.white,
+                              fontFamily: 'Poppins',
+                              fontSize: 11.0,
                             ),
+                            textAlign: TextAlign.left,
                           ),
                         ]
                     ),

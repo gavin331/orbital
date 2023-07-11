@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'AuthService.dart';
 
@@ -161,7 +163,7 @@ class FireStoreService {
         });
   }
 
-  // Check Food backend
+  // The 3 methods below are for Check Food backend
   Future<bool> checkUserAllergenicFoods(String foodName) async {
     final userDocSnapshot = await _firestore.collection('users')
         .where('username', isEqualTo: _authService.user?.displayName)
@@ -213,4 +215,48 @@ class FireStoreService {
     return commonAllergens;
   }
 
+  //The methods below are for Log Symptoms backend
+
+  void logAllergySymptoms(String userId, String title, String symptoms,
+      DateTime occurrenceDate, String precautions) {
+
+    DocumentReference userRef = _firestore.collection('users').doc(userId);
+
+    /*
+    DateTime returns 'YYYY-MM-DD HH:MM:SS.mmm' so if we only want 'YYYY-MM-DD'
+    we can use substring(0,10). Then, if we want DD-MM-YYYY we can extract out
+    the corresponding values and concatenate them.
+     */
+    String formattedDate = '${occurrenceDate.toString().substring(8, 10)}'
+        '-${occurrenceDate.toString().substring(5, 7)}'
+        '-${occurrenceDate.toString().substring(0, 4)}';
+
+    // Update the symptoms array field with the new log entry
+    userRef.update({
+      'symptoms': FieldValue.arrayUnion([
+        {
+          'title' : title,
+          'mySymptoms': symptoms,
+          'occurrenceDate': formattedDate,
+          'precautions': precautions,
+        },
+      ]),
+    })
+    .then((value) => print('Log entry added successfully'))
+    .catchError((error) => print('Failed to add log entry: $error'));
+  }
+
+  Future<void> removeFromUserSymptoms(DocumentSnapshot<Map<String, dynamic>> userDoc,
+      String logTitle, String occurrenceDate, String precautions, String mySymptoms) async {
+    await userDoc.reference.update({
+      'symptoms': FieldValue.arrayRemove([
+        {
+        'mySymptoms': mySymptoms,
+        'occurrenceDate': occurrenceDate,
+        'precautions': precautions,
+        'title': logTitle,
+        },
+      ]),
+    });
+  }
 }

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+//TODO: Seems like this widget is not used anywhere.
+
 class UserProfileButton extends StatelessWidget {
   const UserProfileButton({
     super.key, required this.title, required this.icon,

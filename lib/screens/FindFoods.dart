@@ -164,7 +164,6 @@ class _FindFoodsState extends State<FindFoods> {
                                 ),
                                 TextButton(
                                   onPressed: () async {
-                                    // TODO: Implement the save feature.
                                     // Add every string in the commonElements array
                                     // to the allergen list for the corresponding user doc in firebase.
                                     await _fireStoreService

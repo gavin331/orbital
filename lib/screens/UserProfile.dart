@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:orbital_appllergy/service/FirestoreService.dart';
 import '../service/AuthService.dart';
 
+//TODO: The expansion tile is suppose to come with its own drop down icon but the delete icon is override it.
+
 class UserProfile extends StatefulWidget {
   const UserProfile({Key? key}) : super(key: key);
 
@@ -145,11 +147,11 @@ class _UserProfileState extends State<UserProfile> with TickerProviderStateMixin
                                   icon: const Icon(Icons.delete),
                                   onPressed: () async {
                                     await _fireStoreService.removeFromUserAllergen(userDoc, allergenName);
-                                    setState(() {
+                                    if (context.mounted) {
                                       ScaffoldMessenger.of(context).showSnackBar(
                                         const SnackBar(content: Text('Removed from allergen list')),
                                       );
-                                    });
+                                    }
                                   },
                                 ),
                               );
@@ -180,11 +182,11 @@ class _UserProfileState extends State<UserProfile> with TickerProviderStateMixin
                                   icon: const Icon(Icons.delete),
                                   onPressed: () async {
                                     await _fireStoreService.removeFromUserAllergenicFoods(userDoc, foodName);
-                                    setState(() {
+                                    if (context.mounted) {
                                       ScaffoldMessenger.of(context).showSnackBar(
                                         const SnackBar(content: Text('Removed from allergenic foods list')),
                                       );
-                                    });
+                                    }
                                   },
                                 ),
                               );
@@ -199,7 +201,65 @@ class _UserProfileState extends State<UserProfile> with TickerProviderStateMixin
                     ),
 
                     // Your Symptoms Screen, placeholder
-                    const Text('Your Symptoms Screen'),
+                    StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+                      stream: _fireStoreService.getUserDocSnapshot(),
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData) {
+                          final userDoc = snapshot.data!;
+                          final symptomsList = userDoc.data()?['symptoms'] as List<dynamic>;
+                          return ListView.builder(
+                            itemCount: symptomsList.length,
+                            itemBuilder: (context, index) {
+                              final log = symptomsList[index] as Map<String, dynamic>;
+                              final logTitle = log['title'] as String;
+                              final symptoms = log['mySymptoms'] as String;
+                              final occurrenceDate = log['occurrenceDate'] as String;
+                              final precautions = log['precautions'] as String;
+
+                              return ExpansionTile(
+                                title: logTitle != '' ? Text(logTitle) : const Text('No title'),
+                                trailing: IconButton(
+                                  icon: const Icon(Icons.delete),
+                                  onPressed: () async {
+                                    await _fireStoreService.removeFromUserSymptoms(userDoc, logTitle,
+                                    occurrenceDate, precautions, symptoms);
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(content: Text('Removed from symptoms list')),
+                                      );
+                                    }
+                                  },
+                                ),
+                                children: [
+                                  Text(
+                                    'Date: $occurrenceDate',
+                                    style: const TextStyle(
+                                      fontFamily: 'Poppins',
+                                    ),
+                                  ),
+                                  Text(
+                                    'Description: $symptoms',
+                                    style: const TextStyle(
+                                      fontFamily: 'Poppins',
+                                    ),
+                                  ),
+                                  Text(
+                                    'Precaution: $precautions',
+                                    style: const TextStyle(
+                                      fontFamily: 'Poppins',
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                        } else if (snapshot.hasError) {
+                          return Text('Error: ${snapshot.error}');
+                        } else {
+                          return const CircularProgressIndicator();
+                        }
+                      },
+                    ),
                   ],
                 ),
               ),
@@ -210,41 +270,3 @@ class _UserProfileState extends State<UserProfile> with TickerProviderStateMixin
     );
   }
 }
-
-/*
-Flexible(
-  child: Container(
-    color: Colors.red[100],
-    child: TabBarView(
-      controller: _tabController,
-      children: [
-        ListView(
-          children: const [
-            // Content for Your Allergens tab
-            ListTile(title: Text('Allergen 1')),
-            ListTile(title: Text('Allergen 2')),
-            ListTile(title: Text('Allergen 3')),
-            // ...
-          ],
-        ),
-        ListView(
-          children: const [
-            // Content for Allergenic Foods tab
-            ListTile(title: Text('Food 1')),
-            ListTile(title: Text('Food 2')),
-            ListTile(title: Text('Food 3')),
-            // ...
-          ],
-        ),
-        ListView(
-          children: const [
-            // Content for Your Symptoms tab
-            ListTile(title: Text('Symptom 1')),
-            ListTile(title: Text('Symptom 2')),
-            ListTile(title: Text('Symptom 3')),
-            // ...
-          ],
-        ),
-      ],
-    ),
- */
