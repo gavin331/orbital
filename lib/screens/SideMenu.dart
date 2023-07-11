@@ -3,7 +3,6 @@ import 'package:orbital_appllergy/screens/LinkedAccounts.dart';
 import 'package:orbital_appllergy/screens/UserProfile.dart';
 import 'package:orbital_appllergy/screens/EmergencySettings.dart';
 import 'package:orbital_appllergy/service/AuthService.dart';
-
 import 'SignIn.dart';
 
 class SideMenu extends StatelessWidget {
@@ -71,7 +70,6 @@ class SideMenu extends StatelessWidget {
                   ),
                   onTap: () {
                     Navigator.pop(context); // Close the side menu
-                    //TODO: Display a userprofile screen when tapped.
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => const UserProfile()),
@@ -94,7 +92,6 @@ class SideMenu extends StatelessWidget {
                   ),
                   onTap: () {
                     Navigator.pop(context); // Close the side menu
-                    // TODO: Navigate to the Settings screen
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => const EmergencySettings()),
@@ -117,7 +114,6 @@ class SideMenu extends StatelessWidget {
                   ),
                   onTap: () {
                     Navigator.pop(context); // Close the side menu
-                    // TODO: Navigate to the Linked Accounts screen
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => const LinkedAccounts()),

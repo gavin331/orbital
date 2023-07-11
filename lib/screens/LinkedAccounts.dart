@@ -175,11 +175,11 @@ class _LinkedAccountsState extends State<LinkedAccounts> with SingleTickerProvid
                       onPressed: () async {
                         await _fireStoreService.removeFriend(userDoc, friendName);
                         await _fireStoreService.deleteFriendRequest(friendName);
-                        setState(() {
+                        if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(content: Text('Removed from friend list')),
                           );
-                        });
+                        }
                       },
                     ),
                     children: [
@@ -222,24 +222,76 @@ class _LinkedAccountsState extends State<LinkedAccounts> with SingleTickerProvid
                                     },
                                   ),
 
-
                                   // Allergenic Foods content
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.center,
-                                    children: const [
-                                      Text('Food 1'),
-                                      Text('Food 2'),
-                                      // Add more allergenic foods as needed
-                                    ],
+                                  StreamBuilder(
+                                    stream: _fireStoreService.getFriendDocSnapshot(friendName),
+                                    builder: (context, snapshot) {
+                                      if (snapshot.hasData) {
+                                        final friendDoc = snapshot.data!;
+                                        final friendAllergenicFoods = friendDoc.data()?['allergenicfoods'] as List<dynamic>;
+                                        return ListView.builder(
+                                          itemCount: friendAllergenicFoods.length,
+                                          itemBuilder: (context, index) {
+                                            final foodName = friendAllergenicFoods[index].toString();
+                                            return ListTile(
+                                              title: Text(foodName),
+                                            );
+                                          },
+                                        );
+                                      } else if (snapshot.hasError) {
+                                        return Text('Error: ${snapshot.error}');
+                                      } else {
+                                        return const CircularProgressIndicator();
+                                      }
+                                    },
                                   ),
+
                                   // Symptoms content
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.center,
-                                    children: const [
-                                      Text('Symptom 1'),
-                                      Text('Symptom 2'),
-                                      // Add more symptoms as needed
-                                    ],
+                                  StreamBuilder(
+                                    stream: _fireStoreService.getFriendDocSnapshot(friendName),
+                                    builder: (context, snapshot) {
+                                      if (snapshot.hasData) {
+                                        final friendDoc = snapshot.data!;
+                                        final friendSymptomsList = friendDoc.data()?['symptoms'] as List<dynamic>;
+                                        return ListView.builder(
+                                          itemCount: friendSymptomsList.length,
+                                          itemBuilder: (context, index) {
+                                            final log = friendSymptomsList[index] as Map<String, dynamic>;
+                                            final logTitle = log['title'] as String;
+                                            final symptoms = log['mySymptoms'] as String;
+                                            final occurrenceDate = log['occurrenceDate'] as String;
+                                            final precautions = log['precautions'] as String;
+                                            return ExpansionTile(
+                                              title: logTitle != '' ? Text(logTitle) : const Text('No title'),
+                                              children: [
+                                                Text(
+                                                  'Date: $occurrenceDate',
+                                                  style: const TextStyle(
+                                                    fontFamily: 'Poppins',
+                                                  ),
+                                                ),
+                                                Text(
+                                                  'Description: $symptoms',
+                                                  style: const TextStyle(
+                                                    fontFamily: 'Poppins',
+                                                  ),
+                                                ),
+                                                Text(
+                                                  'Precaution: $precautions',
+                                                  style: const TextStyle(
+                                                    fontFamily: 'Poppins',
+                                                  ),
+                                                ),
+                                              ],
+                                            );
+                                          },
+                                        );
+                                      } else if (snapshot.hasError) {
+                                        return Text('Error: ${snapshot.error}');
+                                      } else {
+                                        return const CircularProgressIndicator();
+                                      }
+                                    },
                                   ),
                                 ],
                               ),
@@ -357,9 +409,7 @@ class _LinkedAccountsState extends State<LinkedAccounts> with SingleTickerProvid
                         icon: const Icon(Icons.close),
                         onPressed: () {
                           // Reject friend request
-                          setState(() {
-                            _fireStoreService.rejectFriendRequest(friendRequestDoc);
-                          });
+                          _fireStoreService.rejectFriendRequest(friendRequestDoc);
                         },
                       ),
                     ],

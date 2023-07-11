@@ -16,7 +16,6 @@ class _SignInState extends State<SignIn> {
   //text controllers
   final TextEditingController _email = TextEditingController();
   final TextEditingController _password = TextEditingController();
-
   final _formKey = GlobalKey<FormState>();
   AuthService authService = AuthService();
   String error = '';
