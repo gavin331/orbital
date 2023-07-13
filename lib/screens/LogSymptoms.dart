@@ -2,6 +2,7 @@ import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:orbital_appllergy/service/AuthService.dart';
 import 'package:orbital_appllergy/service/FirestoreService.dart';
+import '../Reusables/CustomAwesomeDialog.dart';
 
 class LogSymptoms extends StatefulWidget {
   const LogSymptoms({super.key});
@@ -105,19 +106,19 @@ class _LogSymptomsState extends State<LogSymptoms> {
                       selectedDate,
                       _precautionsController.text,
                     );
-                    _buildAlertDialog(
+                    CustomAwesomeDialog(
                       context: context,
                       dialogType: DialogType.success,
                       title: 'Good news!',
                       desc: 'Successfully logged symptoms!',
-                    ).show();
+                    ).buildAlertDialog().show();
                   } catch (e) {
-                    _buildAlertDialog(
+                    CustomAwesomeDialog(
                       context: context,
                       dialogType: DialogType.error,
                       title: 'Oh No!',
                       desc: 'An error occurred! Please try again!',
-                    ).show();
+                    ).buildAlertDialog().show();
                   }
                 },
                 child: const Text('Submit'),
@@ -167,30 +168,6 @@ class _CustomTextField extends StatelessWidget {
       ),
     );
   }
-}
-
-AwesomeDialog _buildAlertDialog({
-  required BuildContext context,
-  required DialogType dialogType,
-  required String title,
-  required String desc,
-}) {
-  return AwesomeDialog(
-    context: context,
-    dialogType: dialogType,
-    title: title,
-    desc: desc,
-    borderSide: const BorderSide(
-      color: Colors.green,
-      width: 2,
-    ),
-    width: 280,
-    buttonsBorderRadius: const BorderRadius.all(
-      Radius.circular(2),
-    ),
-    animType: AnimType.bottomSlide,
-    showCloseIcon: true,
-  );
 }
 
 

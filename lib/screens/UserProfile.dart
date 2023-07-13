@@ -1,9 +1,12 @@
+import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:orbital_appllergy/Reusables/EmergencyCallButton.dart';
 import 'package:orbital_appllergy/service/FirestoreService.dart';
+import 'package:orbital_appllergy/service/ProfileImageService.dart';
+import '../Reusables/CustomAwesomeDialog.dart';
 import '../service/AuthService.dart';
-
-//TODO: The expansion tile is suppose to come with its own drop down icon but the delete icon is override it.
 
 class UserProfile extends StatefulWidget {
   const UserProfile({Key? key}) : super(key: key);
@@ -15,6 +18,25 @@ class UserProfile extends StatefulWidget {
 class _UserProfileState extends State<UserProfile> with TickerProviderStateMixin {
   final AuthService _authService = AuthService();
   final FireStoreService _fireStoreService = FireStoreService();
+  final ProfileImageService _profileImageService = ProfileImageService();
+  String? imageUrl;
+
+  Future<void> fetchUserImageUrl() async {
+    String? userImageUrl = await _fireStoreService.getUserImageUrl();
+    setState(() {
+      imageUrl = userImageUrl;
+    });
+  }
+
+  @override
+  void initState()  {
+    super.initState();
+    /*
+    Call this method whenever the widget is reinitialised so that the String?
+    imageUrl will not be reset
+     */
+    fetchUserImageUrl();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,35 +48,24 @@ class _UserProfileState extends State<UserProfile> with TickerProviderStateMixin
         title: const Text('User Profile'),
         centerTitle: true,
         elevation: 0,
-        actions: [
-          CircleAvatar(
-            backgroundColor: Colors.white,
-            child: IconButton(
-              onPressed: () {
-                // Calls the emergency contact
-              },
-              icon: const Icon(
-                Icons.phone,
-                color: Colors.red,
-              ),
-            ),
-          )
+        actions: const [
+          EmergencyCallButton(),
         ],
       ),
       body: Center(
         child: Column(
           children: [
             const SizedBox(height: 30),
-
-            // User Profile Pic with username(to be implemented)
-            // and password below
             Stack(
               children: [
-                const SizedBox(
+                SizedBox(
                   width: 120,
                   height: 120,
-                  child: CircleAvatar(
-                    child: Icon(Icons.person, size: 50),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(60),
+                    child: imageUrl != null
+                        ? Image.network(imageUrl!, fit: BoxFit.cover)
+                        : const CircleAvatar(child: Icon(Icons.person, size: 50))
                   ),
                 ),
                 Positioned(
@@ -67,8 +78,68 @@ class _UserProfileState extends State<UserProfile> with TickerProviderStateMixin
                       borderRadius: BorderRadius.circular(100),
                       color: Colors.red[100],
                     ),
-                    child: const Icon(
-                      Icons.edit,
+                    child: IconButton(
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: const Text(
+                                'Pick image from: ',
+                                style: TextStyle(
+                                  fontFamily: 'Poppins',
+                                ),
+                              ),
+                              content: SizedBox(
+                                height: 120,
+                                child: Column(
+                                  children: [
+                                    ListTile(
+                                      //Select image from camera
+                                      onTap: () async {
+                                        //Pop the alertdialog
+                                        if (context.mounted) {
+                                          Navigator.pop(context);
+                                        }
+                                        String imageUrl = await _profileImageService.uploadImageToStorage(ImageSource.camera);
+                                        await _profileImageService.linkImageToFirestoreUser(imageUrl);
+                                        await fetchUserImageUrl();
+                                      },
+                                      leading: const Icon(Icons.camera_alt),
+                                      title: const Text(
+                                        'Camera',
+                                        style: TextStyle(
+                                          fontFamily: 'Poppins',
+                                        ),
+                                      ),
+                                    ),
+                                    ListTile(
+                                      //Select image from gallery
+                                      onTap: () async {
+                                        //Pop the alert dialog
+                                        if (context.mounted) {
+                                          Navigator.pop(context);
+                                        }
+                                        String imageUrl = await _profileImageService.uploadImageToStorage(ImageSource.gallery);
+                                        await _profileImageService.linkImageToFirestoreUser(imageUrl);
+                                        await fetchUserImageUrl();
+                                      },
+                                      leading: const Icon(Icons.image),
+                                      title: const Text(
+                                        'Gallery',
+                                        style: TextStyle(
+                                          fontFamily: 'Poppins',
+                                        ),
+                                      ),
+                                    )
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        );
+                      },
+                      icon: const Icon(Icons.edit),
                     ),
                   ),
                 ),
@@ -148,9 +219,12 @@ class _UserProfileState extends State<UserProfile> with TickerProviderStateMixin
                                   onPressed: () async {
                                     await _fireStoreService.removeFromUserAllergen(userDoc, allergenName);
                                     if (context.mounted) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(content: Text('Removed from allergen list')),
-                                      );
+                                      CustomAwesomeDialog(
+                                        context: context,
+                                        dialogType: DialogType.success,
+                                        title: 'Success!',
+                                        desc: 'Removed from allergen list!',
+                                      ).buildAlertDialog().show();
                                     }
                                   },
                                 ),
@@ -183,9 +257,12 @@ class _UserProfileState extends State<UserProfile> with TickerProviderStateMixin
                                   onPressed: () async {
                                     await _fireStoreService.removeFromUserAllergenicFoods(userDoc, foodName);
                                     if (context.mounted) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(content: Text('Removed from allergenic foods list')),
-                                      );
+                                      CustomAwesomeDialog(
+                                        context: context,
+                                        dialogType: DialogType.success,
+                                        title: 'Success!',
+                                        desc: 'Removed from allergenic foods list!',
+                                      ).buildAlertDialog().show();
                                     }
                                   },
                                 ),
@@ -217,19 +294,31 @@ class _UserProfileState extends State<UserProfile> with TickerProviderStateMixin
                               final precautions = log['precautions'] as String;
 
                               return ExpansionTile(
-                                title: logTitle != '' ? Text(logTitle) : const Text('No title'),
-                                trailing: IconButton(
-                                  icon: const Icon(Icons.delete),
-                                  onPressed: () async {
-                                    await _fireStoreService.removeFromUserSymptoms(userDoc, logTitle,
-                                    occurrenceDate, precautions, symptoms);
-                                    if (context.mounted) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(content: Text('Removed from symptoms list')),
-                                      );
-                                    }
-                                  },
+                                title: Row(
+                                  children: [
+                                    Expanded(
+                                      child: logTitle.trim().isNotEmpty
+                                          ? Text(logTitle.replaceAll(RegExp(r'\s+'), ' '))
+                                          : const Text('No title'),
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.delete),
+                                      onPressed: () async {
+                                        await _fireStoreService.removeFromUserSymptoms(userDoc, logTitle,
+                                            occurrenceDate, precautions, symptoms);
+                                        if (context.mounted) {
+                                          CustomAwesomeDialog(
+                                            context: context,
+                                            dialogType: DialogType.success,
+                                            title: 'Success!',
+                                            desc: 'Removed from symptoms list!',
+                                          ).buildAlertDialog().show();
+                                        }
+                                      },
+                                    ),
+                                  ],
                                 ),
+                                trailing: const Icon(Icons.expand_more),
                                 children: [
                                   Text(
                                     'Date: $occurrenceDate',

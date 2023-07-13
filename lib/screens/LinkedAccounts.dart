@@ -104,23 +104,23 @@ class _LinkedAccountsState extends State<LinkedAccounts> with SingleTickerProvid
                               );
                             }
                           } catch (e) {
-                            String error = 'You have already sent a friend request';
                             if (context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text(error)),
+                                const SnackBar(content: Text('You have already sent a friend request')),
                               );
                             }
                           }
-                          if (context.mounted) {
-                            Navigator.of(context).pop();
-                          }
+
                         } else {
                           if (context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(content: Text('Username does not exist')),
                             );
-                            Navigator.of(context).pop(); // Close the dialog
                           }
+                        }
+                        // Pop the alertdialog from the screen.
+                        if (context.mounted) {
+                          Navigator.of(context).pop();
                         }
                       }
                     },
@@ -157,150 +157,193 @@ class _LinkedAccountsState extends State<LinkedAccounts> with SingleTickerProvid
               itemCount: friendList.length,
               itemBuilder: (context, index) {
                 final friendName = friendList[index].toString();
-                return Container(
-                  margin: const EdgeInsets.fromLTRB(10, 10, 10, 5),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(20),
-                    color: Colors.red[200],
-                  ),
-                  child: ExpansionTile(
-                    title: Text(friendName),
-                    leading: const CircleAvatar(
-                      child: Icon(Icons.person),
-                    ),
-
-                    //Remove the friend from the friend list.
-                    trailing: IconButton(
-                      icon: const Icon(Icons.remove_circle),
-                      onPressed: () async {
-                        await _fireStoreService.removeFriend(userDoc, friendName);
-                        await _fireStoreService.deleteFriendRequest(friendName);
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Removed from friend list')),
-                          );
-                        }
-                      },
-                    ),
-                    children: [
-                      DefaultTabController(
-                        length: 3,
-                        child: Column(
-                          children: [
-                            const TabBar(
-                              tabs: [
-                                Tab(text: 'Allergens'),
-                                Tab(text: 'Allergic Foods'),
-                                Tab(text: 'Symptoms'),
-                              ],
+                return FutureBuilder<String?>(
+                  future: _fireStoreService.getFriendImageUrl(friendName),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      // While waiting for the image to load, you can show a placeholder or loading indicator
+                      return const ListTile(
+                        title: Text('Loading...'),
+                        leading: SizedBox(
+                          width: 24, // Set the desired width
+                          height: 24, // Set the desired height
+                          child: CircularProgressIndicator(),
+                        ),
+                      );
+                    } else if (snapshot.hasError) {
+                      return Text('${snapshot.error}');
+                    } else {
+                      /*
+                      This body runs if the returned value of the future is not null. ie. snapshot.hasData == true
+                      However, if the user has no profile pic (future method returns a null),
+                      then we can check for it by using snapshot.connectionState == connectionState.done
+                       */
+                      final imageUrl = snapshot.data;
+                      return Container(
+                        margin: const EdgeInsets.fromLTRB(10, 10, 10, 5),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                          color: Colors.red[200],
+                        ),
+                        child: ExpansionTile(
+                          title: Row(
+                            children: [
+                              Expanded(
+                                child: Text(friendName),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.delete),
+                                onPressed: () async {
+                                  await _fireStoreService.removeFriend(userDoc, friendName);
+                                  await _fireStoreService.deleteFriendRequest(friendName);
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(content: Text('Removed from friend list')),
+                                    );
+                                  }
+                                },
+                              ),
+                            ],
+                          ),
+                          leading: ClipRRect(
+                            borderRadius: BorderRadius.circular(60),
+                            child: SizedBox(
+                              //Set a fixed width and height for the friend's profile picture.
+                              width: 40,
+                              height: 40,
+                              child: imageUrl != null
+                                  ? Image.network(
+                                imageUrl,
+                                fit: BoxFit.cover,
+                              )
+                                  : const CircleAvatar(
+                                child: Icon(Icons.person, size: 30),
+                              ),
                             ),
-                            SizedBox(
-                              height: 150, // Adjust the height as per your requirement
-                              child: TabBarView(
+                          ),
+                          trailing: const Icon(Icons.expand_more),
+                          children: [
+                            DefaultTabController(
+                              length: 3,
+                              child: Column(
                                 children: [
-                                  // Allergens content
-                                  StreamBuilder(
-                                    stream: _fireStoreService.getFriendDocSnapshot(friendName),
-                                    builder: (context, snapshot) {
-                                      if (snapshot.hasData) {
-                                        final friendDoc = snapshot.data!;
-                                        final friendAllergenList = friendDoc.data()?['allergens'] as List<dynamic>;
-                                        return ListView.builder(
-                                          itemCount: friendAllergenList.length,
-                                          itemBuilder: (context, index) {
-                                            final allergenName = friendAllergenList[index].toString();
-                                            return ListTile(
-                                              title: Text(allergenName),
-                                            );
-                                          },
-                                        );
-                                      } else if (snapshot.hasError) {
-                                        return Text('Error: ${snapshot.error}');
-                                      } else {
-                                        return const CircularProgressIndicator();
-                                      }
-                                    },
+                                  const TabBar(
+                                    tabs: [
+                                      Tab(text: 'Allergens'),
+                                      Tab(text: 'Allergic Foods'),
+                                      Tab(text: 'Symptoms'),
+                                    ],
                                   ),
-
-                                  // Allergenic Foods content
-                                  StreamBuilder(
-                                    stream: _fireStoreService.getFriendDocSnapshot(friendName),
-                                    builder: (context, snapshot) {
-                                      if (snapshot.hasData) {
-                                        final friendDoc = snapshot.data!;
-                                        final friendAllergenicFoods = friendDoc.data()?['allergenicfoods'] as List<dynamic>;
-                                        return ListView.builder(
-                                          itemCount: friendAllergenicFoods.length,
-                                          itemBuilder: (context, index) {
-                                            final foodName = friendAllergenicFoods[index].toString();
-                                            return ListTile(
-                                              title: Text(foodName),
-                                            );
+                                  SizedBox(
+                                    height: 150, // Adjust the height as per your requirement
+                                    child: TabBarView(
+                                      children: [
+                                        //Allergens content
+                                        StreamBuilder(
+                                          stream: _fireStoreService.getFriendDocStream(friendName),
+                                          builder: (context, snapshot) {
+                                            if (snapshot.hasData) {
+                                              final friendDoc = snapshot.data!;
+                                              final friendAllergenList = friendDoc.data()?['allergens'] as List<dynamic>;
+                                              return ListView.builder(
+                                                itemCount: friendAllergenList.length,
+                                                itemBuilder: (context, index) {
+                                                  final allergenName = friendAllergenList[index].toString();
+                                                  return ListTile(
+                                                    title: Text(allergenName),
+                                                  );
+                                                },
+                                              );
+                                            } else if (snapshot.hasError) {
+                                              return Text('Error: ${snapshot.error}');
+                                            } else {
+                                              return const CircularProgressIndicator();
+                                            }
                                           },
-                                        );
-                                      } else if (snapshot.hasError) {
-                                        return Text('Error: ${snapshot.error}');
-                                      } else {
-                                        return const CircularProgressIndicator();
-                                      }
-                                    },
-                                  ),
+                                        ),
 
-                                  // Symptoms content
-                                  StreamBuilder(
-                                    stream: _fireStoreService.getFriendDocSnapshot(friendName),
-                                    builder: (context, snapshot) {
-                                      if (snapshot.hasData) {
-                                        final friendDoc = snapshot.data!;
-                                        final friendSymptomsList = friendDoc.data()?['symptoms'] as List<dynamic>;
-                                        return ListView.builder(
-                                          itemCount: friendSymptomsList.length,
-                                          itemBuilder: (context, index) {
-                                            final log = friendSymptomsList[index] as Map<String, dynamic>;
-                                            final logTitle = log['title'] as String;
-                                            final symptoms = log['mySymptoms'] as String;
-                                            final occurrenceDate = log['occurrenceDate'] as String;
-                                            final precautions = log['precautions'] as String;
-                                            return ExpansionTile(
-                                              title: logTitle != '' ? Text(logTitle) : const Text('No title'),
-                                              children: [
-                                                Text(
-                                                  'Date: $occurrenceDate',
-                                                  style: const TextStyle(
-                                                    fontFamily: 'Poppins',
-                                                  ),
-                                                ),
-                                                Text(
-                                                  'Description: $symptoms',
-                                                  style: const TextStyle(
-                                                    fontFamily: 'Poppins',
-                                                  ),
-                                                ),
-                                                Text(
-                                                  'Precaution: $precautions',
-                                                  style: const TextStyle(
-                                                    fontFamily: 'Poppins',
-                                                  ),
-                                                ),
-                                              ],
-                                            );
+                                        // Allergenic Foods content
+                                        StreamBuilder(
+                                          stream: _fireStoreService.getFriendDocStream(friendName),
+                                          builder: (context, snapshot) {
+                                            if (snapshot.hasData) {
+                                              final friendDoc = snapshot.data!;
+                                              final friendAllergenicFoods = friendDoc.data()?['allergenicfoods'] as List<dynamic>;
+                                              return ListView.builder(
+                                                itemCount: friendAllergenicFoods.length,
+                                                itemBuilder: (context, index) {
+                                                  final foodName = friendAllergenicFoods[index].toString();
+                                                  return ListTile(
+                                                    title: Text(foodName),
+                                                  );
+                                                },
+                                              );
+                                            } else if (snapshot.hasError) {
+                                              return Text('Error: ${snapshot.error}');
+                                            } else {
+                                              return const CircularProgressIndicator();
+                                            }
                                           },
-                                        );
-                                      } else if (snapshot.hasError) {
-                                        return Text('Error: ${snapshot.error}');
-                                      } else {
-                                        return const CircularProgressIndicator();
-                                      }
-                                    },
+                                        ),
+
+                                        // Symptoms content
+                                        StreamBuilder(
+                                          stream: _fireStoreService.getFriendDocStream(friendName),
+                                          builder: (context, snapshot) {
+                                            if (snapshot.hasData) {
+                                              final friendDoc = snapshot.data!;
+                                              final friendSymptomsList = friendDoc.data()?['symptoms'] as List<dynamic>;
+                                              return ListView.builder(
+                                                itemCount: friendSymptomsList.length,
+                                                itemBuilder: (context, index) {
+                                                  final log = friendSymptomsList[index] as Map<String, dynamic>;
+                                                  final logTitle = log['title'] as String;
+                                                  final symptoms = log['mySymptoms'] as String;
+                                                  final occurrenceDate = log['occurrenceDate'] as String;
+                                                  final precautions = log['precautions'] as String;
+                                                  return ExpansionTile(
+                                                    title: logTitle != '' ? Text(logTitle) : const Text('No title'),
+                                                    children: [
+                                                      Text(
+                                                        'Date: $occurrenceDate',
+                                                        style: const TextStyle(
+                                                          fontFamily: 'Poppins',
+                                                        ),
+                                                      ),
+                                                      Text(
+                                                        'Description: $symptoms',
+                                                        style: const TextStyle(
+                                                          fontFamily: 'Poppins',
+                                                        ),
+                                                      ),
+                                                      Text(
+                                                        'Precaution: $precautions',
+                                                        style: const TextStyle(
+                                                          fontFamily: 'Poppins',
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  );
+                                                },
+                                              );
+                                            } else if (snapshot.hasError) {
+                                              return Text('Error: ${snapshot.error}');
+                                            } else {
+                                              return const CircularProgressIndicator();
+                                            }
+                                          },
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ],
                               ),
                             ),
                           ],
                         ),
-                      ),
-                    ],
-                  ),
+                      );
+                    }
+                  },
                 );
               },
             );
@@ -313,8 +356,6 @@ class _LinkedAccountsState extends State<LinkedAccounts> with SingleTickerProvid
       ),
     );
   }
-
-
 
   //Builds the friend request list in the LinkedAccounts screen
   Widget _buildFriendRequestList() {
@@ -375,9 +416,8 @@ class _LinkedAccountsState extends State<LinkedAccounts> with SingleTickerProvid
                                                   );
                                                 }
                                               } catch (e) {
-                                                String error = 'You have already sent a friend request';
                                                 ScaffoldMessenger.of(context).showSnackBar(
-                                                  SnackBar(content: Text(error)),
+                                                  const SnackBar(content: Text('You have already sent a friend request')),
                                                 );
                                               }
                                               if (context.mounted) {
