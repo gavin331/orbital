@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'AuthService.dart';
 
@@ -51,6 +49,7 @@ class FireStoreService {
   //Sender's friendlist will get updated.
   Future<void> acceptFriendRequest(QueryDocumentSnapshot<Object?> friendRequestDoc,
       dynamic friendRequestSenderName) async{
+    //TODO: Make use of the getFriendUserDoc below?
     // Accept friend request
     await friendRequestDoc.reference.update({'status' : 'Accepted'});
     //Update the friendlist in the sender document.
@@ -150,7 +149,7 @@ class FireStoreService {
   }
   
   //Linked Accounts Friends Expansion Tile Backend
-  Stream<DocumentSnapshot<Map<String, dynamic>>?> getFriendDocSnapshot(String friendName) {
+  Stream<DocumentSnapshot<Map<String, dynamic>>?> getFriendDocStream(String friendName) {
     return _firestore.collection('users')
         .where('username', isEqualTo: friendName)
         .snapshots()
@@ -197,6 +196,7 @@ class FireStoreService {
   }
 
   Future<List<String>> findCommonAllergensForCheckFood(String foodName) async {
+    //TODO: See whether can just use the user's uid instead of the query below.
     final userDocSnapshot = await _firestore.collection('users')
         .where('username', isEqualTo: _authService.user?.displayName)
         .get();
@@ -258,5 +258,36 @@ class FireStoreService {
         },
       ]),
     });
+  }
+
+  Future<String?> getUserImageUrl() async {
+    DocumentReference userRef = FirebaseFirestore.instance
+        .collection('users')
+        .doc(AuthService().user!.uid);
+
+    DocumentSnapshot snapshot = await userRef.get();
+    Map<String, dynamic> userData = snapshot.data() as Map<String, dynamic>;
+
+    if (userData.containsKey('profilepic') && userData['profilepic'] != null) {
+      return userData['profilepic'];
+    } else {
+      return null;
+    }
+  }
+
+  Future<String?> getFriendImageUrl(String friendName) async {
+    await Future.delayed(const Duration(seconds: 5));
+    final friendUserDocSnapshot = await _firestore.collection('users')
+        .where('username', isEqualTo: friendName)
+        .get();
+    final friendUserDocs = friendUserDocSnapshot.docs;
+    if (friendUserDocs.isNotEmpty) {
+      final friendUserDoc = friendUserDocs.first;
+      final friendUserData = friendUserDoc.data();
+      if (friendUserData.containsKey('profilepic') && friendUserData['profilepic'] != null) {
+        return friendUserData['profilepic'];
+      }
+    }
+    return null;
   }
 }
