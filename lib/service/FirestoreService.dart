@@ -276,7 +276,7 @@ class FireStoreService {
   }
 
   Future<String?> getFriendImageUrl(String friendName) async {
-    await Future.delayed(const Duration(seconds: 5));
+    // await Future.delayed(const Duration(seconds: 5));
     final friendUserDocSnapshot = await _firestore.collection('users')
         .where('username', isEqualTo: friendName)
         .get();
