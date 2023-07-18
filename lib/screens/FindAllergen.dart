@@ -241,5 +241,3 @@ class _FindAllergenState extends State<FindAllergen> {
     return commonElements;
   }
 }
-
-// does not work for fungus and cockroach

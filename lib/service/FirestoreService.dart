@@ -103,17 +103,17 @@ class FireStoreService {
 
   // User Profile Backend
   Future<void> saveToUserAllergen(List<String> commonElements) async {
-    final userDocSnapshot = await _firestore.collection('users')
-        .where('username', isEqualTo: _authService.user?.displayName)
-        .get();
-    final userDocs = userDocSnapshot.docs;
-    if (userDocs.isNotEmpty) {
-      final userDoc = userDocs.first;
-      for (String str in commonElements) {
-        await userDoc.reference.update({
-          'allergens': FieldValue.arrayUnion(
-              [str]),
-        });
+    final userUid = _authService.user?.uid; // Get the user UID
+    if (userUid != null) {
+      final userDocRef = _firestore.collection('users').doc(userUid);
+      final userDocSnapshot = await userDocRef.get();
+
+      if (userDocSnapshot.exists) {
+        for (String str in commonElements) {
+          await userDocRef.update({
+            'allergens': FieldValue.arrayUnion([str]),
+          });
+        }
       }
     }
   }
@@ -126,17 +126,17 @@ class FireStoreService {
   }
   
   Future<void> saveToUserAllergenicFoods(List<String> commonElements) async {
-    final userDocSnapshot = await _firestore.collection('users')
-        .where('username', isEqualTo: _authService.user?.displayName)
-        .get();
-    final userDocs = userDocSnapshot.docs;
-    if (userDocs.isNotEmpty) {
-      final userDoc = userDocs.first;
-      for (String str in commonElements) {
-        await userDoc.reference.update({
-          'allergenicfoods': FieldValue.arrayUnion(
-              [str]),
-        });
+    final userUid = _authService.user?.uid; // Get the user UID
+    if (userUid != null) {
+      final userDocRef = _firestore.collection('users').doc(userUid);
+      final userDocSnapshot = await userDocRef.get();
+
+      if (userDocSnapshot.exists) {
+        for (String str in commonElements) {
+          await userDocRef.update({
+            'allergenicfoods': FieldValue.arrayUnion([str]),
+          });
+        }
       }
     }
   }
@@ -164,20 +164,22 @@ class FireStoreService {
 
   // The 3 methods below are for Check Food backend
   Future<bool> checkUserAllergenicFoods(String foodName) async {
-    final userDocSnapshot = await _firestore.collection('users')
-        .where('username', isEqualTo: _authService.user?.displayName)
-        .get();
-    final userDocs = userDocSnapshot.docs;
-    if (userDocs.isNotEmpty) {
-      final userDoc = userDocs.first;
-      final allergenicFoods = (userDoc.data()['allergenicfoods'] as List<dynamic>)
-        .map((food) => food.toLowerCase())
-        .toList();
-      final foodNameToLowerCase = foodName.toLowerCase();
-      return allergenicFoods.contains(foodNameToLowerCase);
-    } else {
+    String? uid = _authService.user?.uid;
+    if (uid == null) {
       return false;
     }
+
+    final userDocSnapshot = await _firestore.collection('users').doc(uid).get();
+    final userDoc = userDocSnapshot.data();
+    if (userDoc == null) {
+      return false;
+    }
+
+    final allergenicFoods = (userDoc['allergenicfoods'] as List<dynamic>)
+        .map((food) => food.toLowerCase())
+        .toList();
+    final foodNameToLowerCase = foodName.toLowerCase();
+    return allergenicFoods.contains(foodNameToLowerCase);
   }
 
   Future<List<String>> getAllAllergensFromThisFood(String foodName) async {
@@ -196,20 +198,21 @@ class FireStoreService {
   }
 
   Future<List<String>> findCommonAllergensForCheckFood(String foodName) async {
-    //TODO: See whether can just use the user's uid instead of the query below.
-    final userDocSnapshot = await _firestore.collection('users')
-        .where('username', isEqualTo: _authService.user?.displayName)
-        .get();
-    final userDocs = userDocSnapshot.docs;
+    String? uid = _authService.user?.uid;
+    if (uid == null) {
+      return [];
+    }
+    final userDocSnapshot = await _firestore.collection('users').doc(uid).get();
+    final userDoc = userDocSnapshot.data();
+    if (userDoc == null) {
+      return [];
+    }
     List<String> commonAllergens = [];
     List<String> allergensFromDatabase = await getAllAllergensFromThisFood(foodName);
-    if (userDocs.isNotEmpty) {
-      final userDoc = userDocs.first;
-      final allergens = (userDoc.data()['allergens'] as List<dynamic>).toList();
-      for (dynamic allergen in allergens) {
-        if (allergensFromDatabase.contains(allergen)) {
-          commonAllergens.add(allergen);
-        }
+    List<dynamic> allergens = userDoc['allergens'];
+    for (dynamic allergen in allergens) {
+      if (allergensFromDatabase.contains(allergen)) {
+        commonAllergens.add(allergen);
       }
     }
     return commonAllergens;
@@ -263,7 +266,7 @@ class FireStoreService {
   Future<String?> getUserImageUrl() async {
     DocumentReference userRef = FirebaseFirestore.instance
         .collection('users')
-        .doc(AuthService().user!.uid);
+        .doc(AuthService().user?.uid);
 
     DocumentSnapshot snapshot = await userRef.get();
     Map<String, dynamic> userData = snapshot.data() as Map<String, dynamic>;
@@ -276,7 +279,6 @@ class FireStoreService {
   }
 
   Future<String?> getFriendImageUrl(String friendName) async {
-    // await Future.delayed(const Duration(seconds: 5));
     final friendUserDocSnapshot = await _firestore.collection('users')
         .where('username', isEqualTo: friendName)
         .get();

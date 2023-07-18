@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:orbital_appllergy/screens/SignIn.dart';
 import 'package:orbital_appllergy/service/AuthService.dart';
 import 'SuccessfulRegistration.dart';
 
@@ -20,6 +21,8 @@ class _RegisterState extends State<Register> {
   final _formKey = GlobalKey<FormState>();
   AuthService authService = AuthService();
   String error = '';
+  bool _isLoading = false; // Add this variable to track the loading state
+
 
   //Dispose the controller when its no longer needed to avoid memory leak.
   @override
@@ -38,163 +41,191 @@ class _RegisterState extends State<Register> {
     return Scaffold(
       backgroundColor: Colors.red[100],
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => const SignIn()
+                )
+            );
+          },
+        ),
         backgroundColor: Colors.red[200],
         title: const Text(
-          'Sign In',
+          'Sign Up',
           style: TextStyle(
             color: Colors.black,
             fontSize: 30,
             fontFamily: 'Poppins',
           ),
+          textAlign: TextAlign.center,
         ),
         centerTitle: true,
         elevation: 0,
       ),
       body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            child: Form(
-              key: _formKey,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  //Name of the app
-                  const Text(
-                    'Register',
-                    style: TextStyle(
-                      fontSize: 40.0,
-                      fontFamily: 'Poppins',
-                    ),
-                  ),
-                  const Text(
-                    'To join the Appllergy community!',
-                    style: TextStyle(
-                      fontSize: 20.0,
-                      fontFamily: 'Poppins',
-                    ),
-                  ),
-                  const SizedBox(height:30),
-
-                  //Username
-                  _CustomTextField(controller: _username, hintText: 'Username',
-                      prefixIcon: Icons.person, obscureText: false,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter a username';
-                        }
-                        return null;
-                      }),
-                  const SizedBox(height:20),
-
-                  //Email
-                  _CustomTextField(controller: _email, hintText: 'Email',
-                      prefixIcon: Icons.email, obscureText: false,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter an email';
-                        } else if (!RegExp(r'^[\w-]+(\.[\w-]+)*@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*(\.[a-zA-Z]{2,})$',)
-                            .hasMatch(value)){
-                          return 'Please enter a valid email';
-                        }
-                        return null;
-                      }),
-                  const SizedBox(height:20),
-
-                  //Password
-                  _CustomTextField(controller: _password, hintText: 'Password',
-                      prefixIcon: Icons.lock, obscureText: true,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter a password';
-                        } else if (value.length < 6) {
-                          return 'Password length must be at least 6 characters';
-                        } else {
-                          return null;
-                        }
-                      }),
-                  const SizedBox(height:20),
-
-                  //Confirm Password
-                  _CustomTextField(controller: _confirmPassword,
-                      hintText: 'Confirm Password',
-                      prefixIcon: Icons.lock, obscureText: true,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please confirm your password';
-                        } else if (value != _password.text){
-                          return 'Password do not match!';
-                        } else {
-                          return null;
-                        }
-                      }),
-                  const SizedBox(height:20),
-
-                  Text(
-                    error,
-                    style: const TextStyle(
-                      color: Colors.red,
-                      fontSize: 14,
-                    ),
-                  ),
-                  const SizedBox(height:10),
-
-                  //Register
-                  SizedBox(
-                    width: 150,
-                    child: ElevatedButton(
-                      onPressed: () async {
-                        if (_formKey.currentState!.validate()) {
-                          try {
-                            await authService.register(_email.text,
-                                _password.text, _username.text);
-                            if (context.mounted) {
-                              Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(builder: (context) => const SuccessfulRegistration()),
-                              );
-                            }
-                          } on FirebaseAuthException catch (e) {
-                            if (e.code == 'username-already-taken') {
-                              error = 'This username has already been taken';
-                            } else if (e.code == "email-already-in-use") {
-                              error = 'This email is already in use';
-                            } else {
-                              error = 'An error occurred. Please try again later.';
-                            }
-                          } catch (e) {
-                            error = 'An error occurred. Please try again later.';
-                          }
-                        } else {
-                          error = "";
-                        }
-                        setState(() {
-                        });
-                      },
-                      style: ButtonStyle(
-                        backgroundColor: MaterialStateProperty.all<Color>(Colors.red),
-                        textStyle: MaterialStateProperty.all<TextStyle>(
-                          const TextStyle(fontSize: 16, fontWeight: FontWeight.bold), // Button text style
+        child: Stack(
+          children: [
+            Center(
+              child: SingleChildScrollView(
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      //Name of the app
+                      const Text(
+                        'Register',
+                        style: TextStyle(
+                          fontSize: 40.0,
+                          fontFamily: 'Poppins',
                         ),
-                        shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                          RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12), // Button border radius
+                      ),
+                      const Text(
+                        'To join the Appllergy community!',
+                        style: TextStyle(
+                          fontSize: 20.0,
+                          fontFamily: 'Poppins',
+                        ),
+                      ),
+                      const SizedBox(height:30),
+
+                      //Username
+                      _CustomTextField(controller: _username, hintText: 'Username',
+                          prefixIcon: Icons.person, obscureText: false,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter a username';
+                            }
+                            return null;
+                          }),
+                      const SizedBox(height:20),
+
+                      //Email
+                      _CustomTextField(controller: _email, hintText: 'Email',
+                          prefixIcon: Icons.email, obscureText: false,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter an email';
+                            } else if (!RegExp(r'^[\w-]+(\.[\w-]+)*@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*(\.[a-zA-Z]{2,})$',)
+                                .hasMatch(value)){
+                              return 'Please enter a valid email';
+                            }
+                            return null;
+                          }),
+                      const SizedBox(height:20),
+
+                      //Password
+                      _CustomTextField(controller: _password, hintText: 'Password',
+                          prefixIcon: Icons.lock, obscureText: true,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter a password';
+                            } else if (value.length < 6) {
+                              return 'Password length must be at least 6 characters';
+                            } else {
+                              return null;
+                            }
+                          }),
+                      const SizedBox(height:20),
+
+                      //Confirm Password
+                      _CustomTextField(controller: _confirmPassword,
+                          hintText: 'Confirm Password',
+                          prefixIcon: Icons.lock, obscureText: true,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please confirm your password';
+                            } else if (value != _password.text){
+                              return 'Password do not match!';
+                            } else {
+                              return null;
+                            }
+                          }),
+                      const SizedBox(height:20),
+
+                      Text(
+                        error,
+                        style: const TextStyle(
+                          color: Colors.red,
+                          fontSize: 14,
+                        ),
+                      ),
+                      const SizedBox(height:10),
+
+                      //Register
+                      SizedBox(
+                        width: 150,
+                        child: ElevatedButton(
+                          onPressed: () async {
+                            if (_formKey.currentState!.validate()) {
+                              setState(() {
+                                _isLoading = true;
+                              });
+                              try {
+                                await authService.register(_email.text,
+                                    _password.text, _username.text);
+                                if (context.mounted) {
+                                  Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(builder: (context) => const SuccessfulRegistration()),
+                                  );
+                                }
+                              } on FirebaseAuthException catch (e) {
+                                if (e.code == 'username-already-taken') {
+                                  error = 'This username has already been taken';
+                                } else if (e.code == "email-already-in-use") {
+                                  error = 'This email is already in use';
+                                } else {
+                                  error = 'An error occurred. Please try again later.';
+                                }
+                              } catch (e) {
+                                error = 'An error occurred. Please try again later.';
+                              }
+                            } else {
+                              error = "";
+                            }
+                            setState(() {
+                              _isLoading = false;
+                            });
+                          },
+                          style: ButtonStyle(
+                            backgroundColor: MaterialStateProperty.all<Color>(Colors.red),
+                            textStyle: MaterialStateProperty.all<TextStyle>(
+                              const TextStyle(fontSize: 16, fontWeight: FontWeight.bold), // Button text style
+                            ),
+                            shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                              RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12), // Button border radius
+                              ),
+                            ),
+                          ),
+                          child: const Text(
+                            'Register',
+                            style: TextStyle(
+                                fontSize: 20,
+                                fontFamily: 'Poppins'
+                            ),
                           ),
                         ),
                       ),
-                      child: const Text(
-                        'Register',
-                        style: TextStyle(
-                            fontSize: 20,
-                            fontFamily: 'Poppins'
-                        ),
-                      ),
-                    ),
+                      const SizedBox(height:10),
+                    ],
                   ),
-                  const SizedBox(height:10),
-                ],
+                ),
               ),
             ),
-          ),
+
+            if (_isLoading) // Show CircularProgressIndicator on top of everything
+              Container(
+                color: Colors.black.withOpacity(0.5),
+                child: const Center(
+                  child: CircularProgressIndicator(),
+                ),
+              ),
+          ]
         ),
       ),
     );
