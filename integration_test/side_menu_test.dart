@@ -67,8 +67,6 @@ void main() {
       expect(find.byType(UserProfile), findsOneWidget);
     });
 
-    //TODO: Optional : Test for navigation to emergency settings screen but this feature may not be implemented.
-
     testWidgets('Navigate to linked accounts screen',
             (WidgetTester tester) async {
       await tester.pumpWidget(

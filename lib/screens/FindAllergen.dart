@@ -132,6 +132,7 @@ class _FindAllergenState extends State<FindAllergen> {
 
                   //Find Allergen button
                   ElevatedButton(
+                    key: const Key('findAllergenButton'),
                     onPressed: () async {
                       // Get the entered food names from the text controllers
                       List<String> foodNames = [];
