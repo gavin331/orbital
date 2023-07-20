@@ -15,8 +15,9 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       key: _scaffoldKey,
-      drawer: SideMenu(),
+      drawer: const SideMenu(),
       backgroundColor: Colors.red[100],
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(65.0),
@@ -222,7 +223,7 @@ class HomePage extends StatelessWidget {
                       Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => LogSymptoms()
+                              builder: (context) => const LogSymptoms()
                           )
                       );
                     }, // go to Check symptoms screen
