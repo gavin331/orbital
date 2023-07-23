@@ -101,28 +101,31 @@ class _SideMenuState extends State<SideMenu> {
                     );
                   },
                 ),
-                const Divider(
-                    color: Colors.black
-                ),
 
-                //Settings
-                ListTile(
-                  trailing: const Icon(Icons.settings),
-                  title: const Text(
-                    'Emergency Settings',
-                    style: TextStyle(
-                      fontFamily: 'Poppins',
-                      fontSize: 15,
-                    ),
-                  ),
-                  onTap: () {
-                    Navigator.pop(context); // Close the side menu
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const EmergencySettings()),
-                    );
-                  },
-                ),
+                // removed emergency settings bar (no longer a feature)
+
+                // const Divider(
+                //     color: Colors.black
+                // ),
+
+                // //Settings
+                // ListTile(
+                //   trailing: const Icon(Icons.settings),
+                //   title: const Text(
+                //     'Emergency Settings',
+                //     style: TextStyle(
+                //       fontFamily: 'Poppins',
+                //       fontSize: 15,
+                //     ),
+                //   ),
+                //   onTap: () {
+                //     Navigator.pop(context); // Close the side menu
+                //     Navigator.push(
+                //       context,
+                //       MaterialPageRoute(builder: (context) => const EmergencySettings()),
+                //     );
+                //   },
+                // ),
                 const Divider(
                     color: Colors.black
                 ),

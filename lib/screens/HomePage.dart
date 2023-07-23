@@ -264,47 +264,50 @@ class HomePage extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 65.0),
-            Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  SizedBox(
-                    height: 100.0,
-                    width: 100.0,
-                    child: TextButton(
-                        onPressed: () {}, // trigger call to 995 and message sent to emergency contacts
-                        style: ButtonStyle(
-                          backgroundColor:
-                              MaterialStateProperty.resolveWith<Color>((states) {
-                            if (states.contains(MaterialState.pressed)) {
-                              return Colors.red[600]!;
-                            }
-                            return Colors.red;
-                          }),
-                          padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
-                            const EdgeInsets.all(16.0),
-                          ),
-                          shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                            RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(60.0),
-                            ),
-                          ),
-                        ),
-                        child: Column(children: const [
-                          SizedBox(height: 6.0),
-                          Icon(Icons.call, color: Colors.white),
-                          SizedBox(height: 8.0),
-                          Text('Emergency\n   contact',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontFamily: 'Poppins',
-                                fontSize: 10.0,
-                              )
-                          )]
-                        )
-                    ),
-                  ),
-              ]
-            ),
+
+            // removed emergency contact button (no longer a feature)
+
+            // Row(
+            //     mainAxisAlignment: MainAxisAlignment.center,
+            //     children: <Widget>[
+            //       SizedBox(
+            //         height: 100.0,
+            //         width: 100.0,
+            //         child: TextButton(
+            //             onPressed: () {}, // trigger call to 995 and message sent to emergency contacts
+            //             style: ButtonStyle(
+            //               backgroundColor:
+            //                   MaterialStateProperty.resolveWith<Color>((states) {
+            //                 if (states.contains(MaterialState.pressed)) {
+            //                   return Colors.red[600]!;
+            //                 }
+            //                 return Colors.red;
+            //               }),
+            //               padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
+            //                 const EdgeInsets.all(16.0),
+            //               ),
+            //               shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+            //                 RoundedRectangleBorder(
+            //                   borderRadius: BorderRadius.circular(60.0),
+            //                 ),
+            //               ),
+            //             ),
+            //             child: Column(children: const [
+            //               SizedBox(height: 6.0),
+            //               Icon(Icons.call, color: Colors.white),
+            //               SizedBox(height: 8.0),
+            //               Text('Emergency\n   contact',
+            //                   style: TextStyle(
+            //                     color: Colors.white,
+            //                     fontFamily: 'Poppins',
+            //                     fontSize: 10.0,
+            //                   )
+            //               )]
+            //             )
+            //         ),
+            //       ),
+            //   ]
+            // ),
         ]),
     );
   }

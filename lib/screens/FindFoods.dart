@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_sticky_header/flutter_sticky_header.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:orbital_appllergy/Reusables/EmergencyCallButton.dart';
+// import 'package:orbital_appllergy/Reusables/EmergencyCallButton.dart';
 import 'package:orbital_appllergy/service/FirestoreService.dart';
 
 class FindFoods extends StatefulWidget {
@@ -31,9 +31,12 @@ class _FindFoodsState extends State<FindFoods> {
         ),
         centerTitle: true,
         backgroundColor: Colors.red[100],
-        actions: const [
-          EmergencyCallButton(),
-        ],
+
+        // removed emergency call button (no longer a feature)
+
+        // actions: const [
+        //   EmergencyCallButton(),
+        // ],
       ),
       body: CustomScrollView(
         slivers: [
