@@ -209,6 +209,7 @@ class _UserProfileState extends State<UserProfile> with TickerProviderStateMixin
                           final userDoc = snapshot.data!;
                           final allergenList = userDoc.data()?['allergens'] as List<dynamic>;
                           return ListView.builder(
+                            key: const Key('yourAllergensListView'),
                             itemCount: allergenList.length,
                             itemBuilder: (context, index) {
                               final allergenName = allergenList[index].toString();
@@ -247,6 +248,7 @@ class _UserProfileState extends State<UserProfile> with TickerProviderStateMixin
                           final userDoc = snapshot.data!;
                           final allergenicFoodsList = userDoc.data()?['allergenicfoods'] as List<dynamic>;
                           return ListView.builder(
+                            key: const Key('allergenicFoodsListView'),
                             itemCount: allergenicFoodsList.length,
                             itemBuilder: (context, index) {
                               final foodName = allergenicFoodsList[index].toString();
@@ -277,7 +279,7 @@ class _UserProfileState extends State<UserProfile> with TickerProviderStateMixin
                       },
                     ),
 
-                    // Your Symptoms Screen, placeholder
+                    // Your Symptoms Screen
                     StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
                       stream: _fireStoreService.getUserDocSnapshot(),
                       builder: (context, snapshot) {
@@ -285,6 +287,7 @@ class _UserProfileState extends State<UserProfile> with TickerProviderStateMixin
                           final userDoc = snapshot.data!;
                           final symptomsList = userDoc.data()?['symptoms'] as List<dynamic>;
                           return ListView.builder(
+                            key: const Key('yourSymptomsListView'),
                             itemCount: symptomsList.length,
                             itemBuilder: (context, index) {
                               final log = symptomsList[index] as Map<String, dynamic>;

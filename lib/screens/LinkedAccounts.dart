@@ -154,6 +154,7 @@ class _LinkedAccountsState extends State<LinkedAccounts> with SingleTickerProvid
             final userDoc = snapshot.data!;
             final friendList = userDoc.data()?['friendlist'] as List<dynamic>;
             return ListView.builder(
+              key: const Key('friendList'),
               itemCount: friendList.length,
               itemBuilder: (context, index) {
                 final friendName = friendList[index].toString();
@@ -365,6 +366,7 @@ class _LinkedAccountsState extends State<LinkedAccounts> with SingleTickerProvid
         if (snapshot.hasData) {
           final friendRequestDocs = snapshot.data!.docs;
           return ListView.builder(
+            key: const Key('friendRequestList'),
             itemCount: friendRequestDocs.length,
             itemBuilder: (context, index) {
               // Getting the senderName out of every document.

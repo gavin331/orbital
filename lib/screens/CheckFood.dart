@@ -93,17 +93,27 @@ class _CheckFoodState extends State<CheckFood> {
                       ),
                     ),
                     onPressed: () async {
-                      bool result = await _fireStoreService.checkUserAllergenicFoods(_foodName.text);
+                      String foodName = _foodName.text.trim();
+                      if (foodName.isEmpty) {
+                        _buildAlertDialog(
+                          context: context,
+                          dialogType: DialogType.infoReverse,
+                          title: 'Oops!',
+                          desc: 'You forgot to enter a food name!'
+                        ).show();
+                        return;
+                      }
+                      bool result = await _fireStoreService.checkUserAllergenicFoods(foodName);
                       List<String> commonAllergens = await _fireStoreService
-                          .findCommonAllergensForCheckFood(_foodName.text);
+                          .findCommonAllergensForCheckFood(foodName);
                       if (context.mounted) {
                         if (result) {
                           _buildAlertDialog(
                             context: context,
                             dialogType: DialogType.warning,
                             title: 'Warning',
-                            desc: '${_foodName.text} is probably a food you are allergic to, beware!'
-                                ' The allergens you have that are present in ${_foodName.text} are: ',
+                            desc: '$foodName is probably a food you are allergic to, beware!'
+                                ' The allergens you have that are present in $foodName are: ',
                             allergens: commonAllergens,
                           ).show();
                         } else {
