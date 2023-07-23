@@ -134,6 +134,7 @@ class _FindFoodsState extends State<FindFoods> {
 
                   // Find Food Button
                   ElevatedButton(
+                    key: const Key('findFoodsButton'),
                     onPressed: () async {
                       // Get the entered descriptions from the text controllers
                       List<String> descriptions = [];
