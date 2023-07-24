@@ -48,9 +48,6 @@ class _UserProfileState extends State<UserProfile> with TickerProviderStateMixin
         title: const Text('User Profile'),
         centerTitle: true,
         elevation: 0,
-        actions: const [
-          EmergencyCallButton(),
-        ],
       ),
       body: Center(
         child: Column(
