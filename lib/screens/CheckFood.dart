@@ -38,9 +38,6 @@ class _CheckFoodState extends State<CheckFood> {
         ),
         centerTitle: true,
         backgroundColor: Colors.red[100],
-        actions: const [
-          EmergencyCallButton(),
-        ],
       ),
       // Set the Scaffold's backgroundColor to match the AppBar's color
       backgroundColor: Colors.red[100],
