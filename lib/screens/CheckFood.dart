@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_sticky_header/flutter_sticky_header.dart';
-import 'package:orbital_appllergy/Reusables/EmergencyCallButton.dart';
+// import 'package:orbital_appllergy/Reusables/EmergencyCallButton.dart';
 import 'package:orbital_appllergy/service/FirestoreService.dart';
 import 'package:awesome_dialog/awesome_dialog.dart';
 
@@ -39,57 +39,57 @@ class _CheckFoodState extends State<CheckFood> {
         ),
         centerTitle: true,
         backgroundColor: Colors.red[100],
-        actions: const [
-          EmergencyCallButton(),
-        ],
       ),
-      body: CustomScrollView(
-        slivers: [
-          SliverStickyHeader(
-            header: Container(
-              color: Colors.red[200],
-              padding: const EdgeInsets.all(10),
-              child: const Text(
-                'Input food name to find out whether it contains your allergens!',
-                style: TextStyle(
-                  fontFamily: 'Poppins',
-                  fontSize: 16,
-                  color: Colors.white,
+      body: Container(
+        color: Colors.red[100],
+        child: CustomScrollView(
+          slivers: [
+            SliverStickyHeader(
+              header: Container(
+                color: Colors.red[200],
+                padding: const EdgeInsets.all(10),
+                child: const Text(
+                  'Input food name to find out whether it contains your allergens!',
+                  style: TextStyle(
+                    fontFamily: 'Poppins',
+                    fontSize: 16,
+                    color: Colors.white,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-                textAlign: TextAlign.center,
               ),
-            ),
-            sliver: SliverToBoxAdapter(
-              child: Column(
-                children: [
-                  const SizedBox(height: 50),
-                  Container(
-                    width: 300,
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: Colors.red,
-                        width: 1.0,
+              sliver: SliverToBoxAdapter(
+                child: Column(
+                  children: [
+                    const SizedBox(height: 50),
+                    Container(
+                      width: 300,
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: Colors.red,
+                          width: 1.0,
+                        ),
+                        borderRadius: BorderRadius.circular(8.0),
                       ),
-                      borderRadius: BorderRadius.circular(8.0),
-                    ),
-                    child: TextFormField(
-                      controller: _foodName,
-                      decoration: const InputDecoration(
-                        hintText: 'Enter food name here',
-                        border: InputBorder.none,
-                        contentPadding: EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 14,
+                      child: TextFormField(
+                        controller: _foodName,
+                        decoration: const InputDecoration(
+                          hintText: 'Enter food name here',
+                          border: InputBorder.none,
+                          contentPadding: EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 14,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 30),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red[400],
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
+                    const SizedBox(height: 30),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red[400],
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
                       ),
                     ),
                     onPressed: () async {
@@ -126,15 +126,15 @@ class _CheckFoodState extends State<CheckFood> {
                             // allergens: commonAllergens,
                           ).show();
                         }
-                      }
-                    },
-                    child: const Text('Find out'),
-                  ),
-                ],
+                      },
+                      child: const Text('Find out'),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -213,4 +213,3 @@ AwesomeDialog _buildAlertDialog({
     showCloseIcon: true,
   );
 }
-

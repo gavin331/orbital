@@ -32,9 +32,16 @@ class _LogSymptomsState extends State<LogSymptoms> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Log Symptoms'),
+        title: const Text(
+          "Log Symptoms",
+          style: TextStyle(
+            fontSize: 32.0,
+            fontFamily: 'Poppins',
+            color: Colors.black,
+          ),
+        ),
         centerTitle: true,
-        backgroundColor: Colors.red[300],
+        backgroundColor: Colors.red[100],
       ),
       body: SingleChildScrollView(
         child: Center(
@@ -58,7 +65,7 @@ class _LogSymptomsState extends State<LogSymptoms> {
               const SizedBox(height: 10),
               ElevatedButton(
                 style: ButtonStyle(
-                  backgroundColor: MaterialStateProperty.all(Colors.red[400]),
+                  backgroundColor: MaterialStateProperty.all(Colors.red[300]),
                 ),
                 onPressed: () async {
                   DateTime? newDate = await showDatePicker(
@@ -169,5 +176,3 @@ class _CustomTextField extends StatelessWidget {
     );
   }
 }
-
-
