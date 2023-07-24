@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_sticky_header/flutter_sticky_header.dart';
-// import 'package:orbital_appllergy/Reusables/EmergencyCallButton.dart';
+import 'package:orbital_appllergy/Reusables/EmergencyCallButton.dart';
 import 'package:orbital_appllergy/service/FirestoreService.dart';
 import 'package:awesome_dialog/awesome_dialog.dart';
 
@@ -14,7 +14,6 @@ class CheckFood extends StatefulWidget {
 }
 
 class _CheckFoodState extends State<CheckFood> {
-
   final FireStoreService _fireStoreService = FireStoreService();
   final TextEditingController _foodName = TextEditingController();
 
@@ -39,57 +38,59 @@ class _CheckFoodState extends State<CheckFood> {
         ),
         centerTitle: true,
         backgroundColor: Colors.red[100],
+        actions: const [
+          EmergencyCallButton(),
+        ],
       ),
-      body: Container(
-        color: Colors.red[100],
-        child: CustomScrollView(
-          slivers: [
-            SliverStickyHeader(
-              header: Container(
-                color: Colors.red[200],
-                padding: const EdgeInsets.all(10),
-                child: const Text(
-                  'Input food name to find out whether it contains your allergens!',
-                  style: TextStyle(
-                    fontFamily: 'Poppins',
-                    fontSize: 16,
-                    color: Colors.white,
-                  ),
-                  textAlign: TextAlign.center,
+      // Set the Scaffold's backgroundColor to match the AppBar's color
+      backgroundColor: Colors.red[100],
+      body: CustomScrollView(
+        slivers: [
+          SliverStickyHeader(
+            header: Container(
+              color: Colors.red[200],
+              padding: const EdgeInsets.all(10),
+              child: const Text(
+                'Input food name to find out whether it contains your allergens!',
+                style: TextStyle(
+                  fontFamily: 'Poppins',
+                  fontSize: 16,
+                  color: Colors.white,
                 ),
+                textAlign: TextAlign.center,
               ),
-              sliver: SliverToBoxAdapter(
-                child: Column(
-                  children: [
-                    const SizedBox(height: 50),
-                    Container(
-                      width: 300,
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: Colors.red,
-                          width: 1.0,
-                        ),
-                        borderRadius: BorderRadius.circular(8.0),
+            ),
+            sliver: SliverToBoxAdapter(
+              child: Column(
+                children: [
+                  const SizedBox(height: 50),
+                  Container(
+                    width: 300,
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: Colors.red,
+                        width: 1.0,
                       ),
-                      child: TextFormField(
-                        controller: _foodName,
-                        decoration: const InputDecoration(
-                          hintText: 'Enter food name here',
-                          border: InputBorder.none,
-                          contentPadding: EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 14,
-                          ),
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                    child: TextFormField(
+                      controller: _foodName,
+                      decoration: const InputDecoration(
+                        hintText: 'Enter food name here',
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 14,
                         ),
                       ),
                     ),
-                    const SizedBox(height: 30),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red[400],
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
+                  ),
+                  const SizedBox(height: 30),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red[400],
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
                       ),
                     ),
                     onPressed: () async {
@@ -99,13 +100,13 @@ class _CheckFoodState extends State<CheckFood> {
                           context: context,
                           dialogType: DialogType.infoReverse,
                           title: 'Oops!',
-                          desc: 'You forgot to enter a food name!'
+                          desc: 'You forgot to enter a food name!',
                         ).show();
                         return;
                       }
+
                       bool result = await _fireStoreService.checkUserAllergenicFoods(foodName);
-                      List<String> commonAllergens = await _fireStoreService
-                          .findCommonAllergensForCheckFood(foodName);
+                      List<String> commonAllergens = await _fireStoreService.findCommonAllergensForCheckFood(foodName);
                       if (context.mounted) {
                         if (result) {
                           _buildAlertDialog(
@@ -121,20 +122,20 @@ class _CheckFoodState extends State<CheckFood> {
                             context: context,
                             dialogType: DialogType.success,
                             title: 'Not Found!',
-                            desc: 'Good news! ${_foodName.text} is probably not a food you are allergic to,'
+                            desc: 'Good news! $foodName is probably not a food you are allergic to,'
                                 ' but proceed with caution just in case!',
                             // allergens: commonAllergens,
                           ).show();
                         }
-                      },
-                      child: const Text('Find out'),
-                    ),
-                  ],
-                ),
+                      }
+                    },
+                    child: const Text('Find out'),
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -161,25 +162,27 @@ AwesomeDialog _buildAlertDialog({
     animType: AnimType.bottomSlide,
     body: Column(
       children: [
-        if (title != null) Text(
-          title,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            fontFamily: 'Poppins',
-          ),
-        ),
-        const SizedBox(height: 10),
-        if (desc != null) Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-          child: Text(
-            desc,
-            textAlign: TextAlign.left,
+        if (title != null)
+          Text(
+            title,
             style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
               fontFamily: 'Poppins',
             ),
           ),
-        ),
+        const SizedBox(height: 10),
+        if (desc != null)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: Text(
+              desc,
+              textAlign: TextAlign.left,
+              style: const TextStyle(
+                fontFamily: 'Poppins',
+              ),
+            ),
+          ),
         const SizedBox(height: 10),
         /*
         Everything below will be shown only when the allergen parameter is not null.
@@ -191,23 +194,23 @@ AwesomeDialog _buildAlertDialog({
           SizedBox(
             height: 200,
             child: ListView.builder(
-                padding: const EdgeInsets.only(top: 0), // Add top padding
-                itemCount: allergens.length,
-                itemBuilder: (context, index) {
-                  return ListTile(
-                      contentPadding: const EdgeInsets.only(left: 16),
-                      title: Text(
-                        '${index + 1}. ${allergens[index]}',
-                        style: const TextStyle(
-                          fontFamily: 'Poppins',
-                          fontSize: 15,
-                        ),
-                      )
-                  );
-                }
+              padding: const EdgeInsets.only(top: 0), // Add top padding
+              itemCount: allergens.length,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  contentPadding: const EdgeInsets.only(left: 16),
+                  title: Text(
+                    '${index + 1}. ${allergens[index]}',
+                    style: const TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 15,
+                    ),
+                  ),
+                );
+              },
             ),
           ),
-        ]
+        ],
       ],
     ),
     showCloseIcon: true,
