@@ -16,12 +16,12 @@ User Stories:
 (C) Have a user profile where I can retrieve my possible allergens so that I can keep track of them easily.
 (D) Check whether the food I want to consume contains any of the allergens so that I can avoid it if needed.
 (E) Enter the symptoms I am experiencing so that I can find out if I am experiencing an allergic reaction, and if so, gauge the severity of symptoms so that I can decide the appropriate course of action.
-(F) Be able to access my emergency contact immediately through the app so that I can get help if any serious allergic reaction occurs
+
 2. As someone who is the caretaker or friend of a person who has food allergies, I want to:
 (A) Access their user profile (with prior app permission) to view their allergens as and when necessary so that I can be aware of their allergens and take necessary precautions.
 
 
-The 5 features are: find allergen, find foods, check food, check symptoms and option to call the emergency contact. These features are further listed below with a description of their functions, along with illustrations on how they will look and function from the user’s perspective.
+The 4 features are: find allergen, find foods, check food, and check symptoms. These features are further listed below with a description of their functions, along with illustrations on how they will look and function from the user’s perspective.
 
 1. Find Allergen (Main feature)
 
